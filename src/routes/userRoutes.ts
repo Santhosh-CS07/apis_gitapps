@@ -5,13 +5,14 @@ import {
     getAnnualIncome, getCity, getCountry,
     getState, getHeight, getWeight, getExtraSkills, getOccupation, getRaasiStar, getStar, getRaasi,
     getFeMaleProfiles, getMaleProfiles, getShortListProfiles, getMyProfiles, getProfileData,
-     getSearchData, getUserDataById
+     getSearchData, getUserDataById, createImages
 } from '../controllers/userController';
 
 const router = new Router();
 
 // post methods
 router.post('/user/createUser', createUser);
+router.post('/user/createImages', createImages);
 router.post('/user/getSearchData', getSearchData);
 
 // get methods

@@ -63,7 +63,7 @@ export const createUser = async (ctx: Context) => {
         let personalData: any;
         try {
             personalData = await User.create(userPersonalData);
-            console.log("User created successfully:", personalData);
+            console.log("User created successfully:");
         } catch (err:any) {
             ctx.status = 400;
             console.error("Error inserting personal data:", err);
@@ -72,25 +72,6 @@ export const createUser = async (ctx: Context) => {
         }
 
         if (personalData) {
-            // Insert images into user_image table
-            try {
-                if (personalDetails?.images?.length > 0) {
-                    for (let i = 0; i < personalDetails.images.length; i++) {
-                        await UserImages.create({
-                            image: personalDetails.images[i] || "Any",
-                            matriId: personalDetails?.matriId || "Any",
-                            position: i + 1,
-                            deleteStatus: 1
-                        });
-                    }
-                }
-            } catch (err:any) {
-            ctx.status = 400;
-                console.error("Error inserting user images:", err);
-                ctx.body = { status: 3, message: 'Error inserting user images', error: err.message };
-                return;
-            }
-
             // Religious data insertion
             const religionData: any = {
                 caste: religionDetails?.caste_ || "Any",
@@ -247,6 +228,36 @@ export const createUser = async (ctx: Context) => {
         ctx.body = { status: 500, message: 'Unexpected error occurred', error: err.message };
     }
 };
+
+export const createImages = async (ctx: Context) => {
+    const { images, matriId } = ctx.request.body as any;
+
+    // Basic validation for required fields
+    if (!images || !matriId) {
+        ctx.status = 400;
+        ctx.body = { status: 2, message: 'Images or MatriId missing in the request body' };
+        return;
+    }
+
+    // Insert images into user_image table
+    try {
+        await UserImages.create({
+            image: images,
+            matriId: matriId,
+            position: 1,
+            deleteStatus: 1
+        });
+        
+        ctx.status = 200;
+        ctx.body = { status: 1, message: 'Images inserted successfully' };
+    } catch (err: any) {
+        ctx.status = 400;
+        console.error("Error inserting user images:", err);
+        ctx.body = { status: 3, message: 'Error inserting user images', error: err.message };
+        return;
+    }
+};
+
 
 
 export const getSearchData = async (ctx: Context) => {

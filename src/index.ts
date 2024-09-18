@@ -9,7 +9,16 @@ import sequelize from './config/database';  // Adjust the import path if necessa
 
 const app = new Koa();
 
-app.use(koaBody());
+app.use(koaBody({
+    multipart: true,  // Important if you're uploading files
+    formidable: {
+        maxFileSize: 20 * 1024 * 1024  // Set max file size (20MB in this example)
+    },
+    jsonLimit: '50mb',  // Increase the JSON body limit to handle large JSON payloads
+    formLimit: '50mb',  // Increase the form body limit
+    textLimit: '50mb',  // Increase the text body limit if you're sending plain text payloads
+}));
+
 app.use(serve(path.join(__dirname, 'uploads')));
 
 app.use(cors({
