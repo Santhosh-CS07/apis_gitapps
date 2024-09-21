@@ -752,3 +752,54 @@ export const getRaasiStar = async (ctx: Context) => {
         ctx.body = error.message;
     }
 };
+
+
+export const deleteUser = async (ctx: Context) => {
+    const { matriId } = ctx.query as any;  
+    try {
+        await User.destroy({where:{matriId: matriId}}).catch((error:any)=>{
+            ctx.body = { status: 3, message: 'delete failed...', data: [] };
+            return;
+        });
+
+        await UserImages.destroy({where:{matriId: matriId}}).catch((error:any)=>{
+            ctx.body = { status: 3, message: 'delete failed...', data: [] };
+            return;
+        });
+
+        await UserProfessionalDetails.destroy({where:{matriId: matriId}}).catch((error:any)=>{
+            ctx.body = { status: 3, message: 'delete failed...', data: [] };
+            return;
+        });
+
+        await PartnerPrefrence.destroy({where:{matriId: matriId}}).catch((error:any)=>{
+            ctx.body = { status: 3, message: 'delete failed...', data: [] };
+            return;
+        });
+        await ReligionDetails.destroy({where:{matriId: matriId}}).catch((error:any)=>{
+            ctx.body = { status: 3, message: 'delete failed...', data: [] };
+            return;
+        });
+
+        await FamilyDetails.destroy({where:{matriId: matriId}}).catch((error:any)=>{
+            ctx.body = { status: 3, message: 'delete failed...', data: [] };
+            return;
+        });
+        await FamilyPropertyDetails.destroy({where:{matriId: matriId}}).catch((error:any)=>{
+            ctx.body = { status: 3, message: 'delete failed...', data: [] };
+            return;
+        });
+
+        await LocationDetails.destroy({where:{matriId: matriId}}).catch((error:any)=>{
+            ctx.body = { status: 3, message: 'delete failed...', data: [] };
+            return;
+        });
+
+      // Send success response
+      ctx.body = { status: 1, message: 'Success', data: [] };
+    } catch (error: any) {
+      // Send error response
+      ctx.status = 400;
+      ctx.body = { status: 0, message: error.message };
+    }
+  };

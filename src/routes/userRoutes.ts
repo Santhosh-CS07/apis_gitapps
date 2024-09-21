@@ -5,7 +5,7 @@ import {
     getAnnualIncome, getCity, getCountry,
     getState, getHeight, getWeight, getExtraSkills, getOccupation, getRaasiStar, getStar, getRaasi,
     getFeMaleProfiles, getMaleProfiles, getShortListProfiles, getMyProfiles, getProfileData,
-     getSearchData, getUserDataById, createImages
+     getSearchData, getUserDataById, createImages, deleteUser
 } from '../controllers/userController';
 
 const router = new Router();
@@ -37,5 +37,8 @@ router.get('/user/getStar', getStar);
 router.get('/user/getRaasiStar', getRaasiStar);
 router.get('/user/getProfileData', getProfileData);
 router.get('/user/getUserDataById', getUserDataById);
+
+// delete methods
+router.delete('/user/deleteUser', deleteUser);
 
 export default router;
