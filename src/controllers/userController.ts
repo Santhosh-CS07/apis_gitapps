@@ -338,7 +338,7 @@ export const getSearchData = async (ctx: Context) => {
 export const getFeMaleProfiles = async (ctx: Context) => {
     try {
         const users = await User.findAll({where:{gender:"Female", deleteStatus:1},
-            attributes:['name', 'matriId', 'age', 'height', 'createdBy'],
+            attributes:['name', 'matriId', 'age', 'height', 'createdBy', 'shortList'],
             order: [['id', 'DESC']],
             include:[{
             model: UserProfessionalDetails,
@@ -370,7 +370,7 @@ export const getFeMaleProfiles = async (ctx: Context) => {
 export const getMaleProfiles = async (ctx: Context) => {
     try {
         const users = await User.findAll({where:{gender:"Male", deleteStatus:1},
-            attributes:['name', 'matriId', 'age', 'height', 'createdBy'],
+            attributes:['name', 'matriId', 'age', 'height', 'createdBy', 'shortList'],
             order: [['id', 'DESC']],
             include:[{
             model: UserProfessionalDetails,
@@ -403,7 +403,7 @@ export const getMyProfiles = async (ctx: Context) => {
     const { bureauId, gender } = ctx.query as any
     try {
         const users = await User.findAll({where:{gender:gender, bureauId:bureauId, deleteStatus:1},
-            attributes:['name', 'matriId', 'age', 'height', 'createdBy', 'mobileNumber', 'password'],
+            attributes:['name', 'matriId', 'age', 'height', 'createdBy', 'mobileNumber', 'password', 'shortList'],
             order: [['id', 'DESC']],
             include:[{
             model: UserProfessionalDetails,
@@ -791,6 +791,24 @@ export const deleteUser = async (ctx: Context) => {
         });
 
         await LocationDetails.destroy({where:{matriId: matriId}}).catch((error:any)=>{
+            ctx.body = { status: 3, message: 'delete failed...', data: [] };
+            return;
+        });
+
+      // Send success response
+      ctx.body = { status: 1, message: 'Success', data: [] };
+    } catch (error: any) {
+      // Send error response
+      ctx.status = 400;
+      ctx.body = { status: 0, message: error.message };
+    }
+  };
+
+
+  export const updateShortList = async (ctx: Context) => {
+    const { matriId, status } =ctx.request.body as any;
+    try {
+        await User.update({shortList:status},{where:{matriId: matriId}}).catch((error:any)=>{
             ctx.body = { status: 3, message: 'delete failed...', data: [] };
             return;
         });

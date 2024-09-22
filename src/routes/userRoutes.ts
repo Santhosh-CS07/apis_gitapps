@@ -5,7 +5,7 @@ import {
     getAnnualIncome, getCity, getCountry,
     getState, getHeight, getWeight, getExtraSkills, getOccupation, getRaasiStar, getStar, getRaasi,
     getFeMaleProfiles, getMaleProfiles, getShortListProfiles, getMyProfiles, getProfileData,
-     getSearchData, getUserDataById, createImages, deleteUser
+     getSearchData, getUserDataById, createImages, deleteUser, updateShortList
 } from '../controllers/userController';
 
 const router = new Router();
@@ -37,6 +37,9 @@ router.get('/user/getStar', getStar);
 router.get('/user/getRaasiStar', getRaasiStar);
 router.get('/user/getProfileData', getProfileData);
 router.get('/user/getUserDataById', getUserDataById);
+
+
+router.put('/user/updateShortList', updateShortList);
 
 // delete methods
 router.delete('/user/deleteUser', deleteUser);
