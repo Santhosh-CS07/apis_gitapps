@@ -22,6 +22,7 @@ import FamilyDetails from '../models/FamilyDetails';
 import FamilyPropertyDetails from '../models/FamilyPropertyDetails';
 import LocationDetails from '../models/LocationDetails';
 import PartnerPrefrence from '../models/PartnerPrefrence';
+import BureauUser from '../models/BureauUser';
 
 export const createUser = async (ctx: Context) => {
     try {
@@ -528,6 +529,12 @@ export const getProfileData = async (ctx: Context) => {
         {
             model: PartnerPrefrence,
             as: 'partnerDetails'
+        },
+        {
+            model: BureauUser,
+            as: 'bureau',
+            where:{deleteStatus:1},
+            attributes:['mobileNumber']
         }
     ]});
         ctx.body = { status: 1, message: 'Success', data: data };

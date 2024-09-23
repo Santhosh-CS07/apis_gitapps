@@ -14,9 +14,9 @@ app.use(koaBody({
     formidable: {
         maxFileSize: 20 * 1024 * 1024  // Set max file size (20MB in this example)
     },
-    jsonLimit: '50mb',  // Increase the JSON body limit to handle large JSON payloads
-    formLimit: '50mb',  // Increase the form body limit
-    textLimit: '50mb',  // Increase the text body limit if you're sending plain text payloads
+    jsonLimit: '100mb',  // Increase the JSON body limit to handle large JSON payloads
+    formLimit: '100mb',  // Increase the form body limit
+    textLimit: '100mb',  // Increase the text body limit if you're sending plain text payloads
 }));
 
 app.use(serve(path.join(__dirname, 'uploads')));
