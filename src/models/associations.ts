@@ -10,6 +10,7 @@ import FamilyDetails from './FamilyDetails';
 import FamilyPropertyDetails from './FamilyPropertyDetails';
 import PartnerPrefrence from './PartnerPrefrence';
 import BureauUser from './BureauUser';
+import PartnerPreference from './PartnerPrefrence';
 
 // Define associations
 export const setupAssociations = () => {
@@ -27,7 +28,7 @@ export const setupAssociations = () => {
         sourceKey: 'matriId', as: 'familyDetails' });
         User.hasMany(FamilyPropertyDetails, {  foreignKey: 'matriId',
         sourceKey: 'matriId', as: 'familyPropertyDetails' });
-        User.hasMany(PartnerPrefrence, {  foreignKey: 'matriId',
+        User.hasMany(PartnerPreference, {  foreignKey: 'matriId',
         sourceKey: 'matriId', as: 'partnerDetails' });
         User.hasOne(BureauUser, {  foreignKey: 'bureauId',
                 sourceKey: 'bureauId', as: 'bureau' });

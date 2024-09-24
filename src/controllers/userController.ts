@@ -23,6 +23,7 @@ import FamilyPropertyDetails from '../models/FamilyPropertyDetails';
 import LocationDetails from '../models/LocationDetails';
 import PartnerPrefrence from '../models/PartnerPrefrence';
 import BureauUser from '../models/BureauUser';
+import PartnerPreference from '../models/PartnerPrefrence';
 
 export const createUser = async (ctx: Context) => {
     try {
@@ -194,33 +195,49 @@ export const createUser = async (ctx: Context) => {
                 ctx.body = { status: 3, message: 'Error inserting location details', error: err.message };
                 return;
             };
-            let preferenceItemsArray:any = [];
-            for (let key in partnerPreferenceDetails) {
-                if (partnerPreferenceDetails.hasOwnProperty(key)) {
-                    let values = Array.isArray(partnerPreferenceDetails[key]) 
-                    ? (partnerPreferenceDetails[key].length > 0 ? partnerPreferenceDetails[key].join('|') : 'Any') 
-                    : partnerPreferenceDetails[key];
-
-                    let obj = {
-                        type: `${key}`,
-                        matriId: personalDetails?.matriId,
-                        values: values
-                    };
-                    preferenceItemsArray.push(obj);
-                }
-            }
-
-            try {
-                // console.log("preferenceItemsArray", preferenceItemsArray);
-                await PartnerPrefrence.bulkCreate(preferenceItemsArray);
-                ctx.body = { status: 1, message: 'User created successfully', data: personalDetails?.matriId };
-            } catch (err:any) {
-                ctx.status = 400;
-                console.error("Error inserting PartnerPrefrence details:", err);
-                ctx.body = { status: 3, message: 'Error inserting PartnerPrefrence details', error: err.message };
-                return;
+            const preferenceData = {
+                matriId: personalDetails?.matriId, // Ensure personalDetails is defined and contains matriId
+                servicePreference: partnerPreferenceDetails.servicePreference.length > 0 ? partnerPreferenceDetails.servicePreference.join('|') : 'Any',
+                createdByPreference: partnerPreferenceDetails.createdByPreference.length > 0 ? partnerPreferenceDetails.createdByPreference.join('|') : 'Any',
+                religionPreference: partnerPreferenceDetails.religionPreference.length > 0 ? partnerPreferenceDetails.religionPreference.join('|') : 'Any',
+                castePreference: partnerPreferenceDetails.castePreference.length > 0 ? partnerPreferenceDetails.castePreference.join('|') : 'Any',
+                subCastePreference: partnerPreferenceDetails.subCastePreference.length > 0 ? partnerPreferenceDetails.subCastePreference.join('|') : 'Any',
+                maritalStatusPreference: partnerPreferenceDetails.maritalStatusPreference.length > 0 ? partnerPreferenceDetails.maritalStatusPreference.join('|') : 'Any',
+                childrenPreference: partnerPreferenceDetails.childrenPreference.length > 0 ? partnerPreferenceDetails.childrenPreference.join('|') : 'Any',
+                motherTonguePreference: partnerPreferenceDetails.motherTonguePreference.length > 0 ? partnerPreferenceDetails.motherTonguePreference.join('|') : 'Any',
+                ageFrom: partnerPreferenceDetails.ageFrom,
+                ageTo: partnerPreferenceDetails.ageTo,
+                heightFrom: partnerPreferenceDetails.heightFrom,
+                heightTo: partnerPreferenceDetails.heightTo,
+                educationPreference: partnerPreferenceDetails.educationPreference.length > 0 ? partnerPreferenceDetails.educationPreference.join('|') : 'Any',
+                employeePreference: partnerPreferenceDetails.employeePreference.length > 0 ? partnerPreferenceDetails.employeePreference.join('|') : 'Any',
+                jobLocationPreference: partnerPreferenceDetails.jobLocationPreference.length > 0 ? partnerPreferenceDetails.jobLocationPreference.join('|') : 'Any',
+                annualIncomePreference: partnerPreferenceDetails.annualIncomePreference.length > 0 ? partnerPreferenceDetails.annualIncomePreference.join('|') : 'Any',
+                familyPreference: partnerPreferenceDetails.familyPreference.length > 0 ? partnerPreferenceDetails.familyPreference.join('|') : 'Any',
+                settledLocationPreference: partnerPreferenceDetails.settledLocationPreference.length > 0 ? partnerPreferenceDetails.settledLocationPreference.join('|') : 'Any',
+                ownHousePreference: partnerPreferenceDetails.ownHousePreference.length > 0 ? partnerPreferenceDetails.ownHousePreference.join('|') : 'Any',
+                sftPreference: partnerPreferenceDetails.sftPreference.length > 0 ? partnerPreferenceDetails.sftPreference.join('|') : 'Any',
+                monthlyRentsPreference: partnerPreferenceDetails.monthlyRentsPreference.length > 0 ? partnerPreferenceDetails.monthlyRentsPreference.join('|') : 'Any',
+                openPlotsLandsPreference: partnerPreferenceDetails.openPlotsLandsPreference.length > 0 ? partnerPreferenceDetails.openPlotsLandsPreference.join('|') : 'Any',
+                apartmentFlatsPreference: partnerPreferenceDetails.apartmentFlatsPreference.length > 0 ? partnerPreferenceDetails.apartmentFlatsPreference.join('|') : 'Any',
+                propertyLocationPreference: partnerPreferenceDetails.propertyLocationPreference.length > 0 ? partnerPreferenceDetails.propertyLocationPreference.join('|') : 'Any',
+                agricultureLandPreference: partnerPreferenceDetails.agricultureLandPreference.length > 0 ? partnerPreferenceDetails.agricultureLandPreference.join('|') : 'Any',
+                totalPropertyValuePreference: partnerPreferenceDetails.totalPropertyValuePreference.length > 0 ? partnerPreferenceDetails.totalPropertyValuePreference.join('|') : 'Any',
+                countryPreference: partnerPreferenceDetails.countryPreference.length > 0 ? partnerPreferenceDetails.countryPreference.join('|') : 'Any',
+                statePreference: partnerPreferenceDetails.statePreference.length > 0 ? partnerPreferenceDetails.statePreference.join('|') : 'Any',
+                cityPreference: partnerPreferenceDetails.cityPreference.length > 0 ? partnerPreferenceDetails.cityPreference.join('|') : 'Any',
+                citizenshipPreference: partnerPreferenceDetails.citizenshipPreference.length > 0 ? partnerPreferenceDetails.citizenshipPreference.join('|') : 'Any',
             };
-
+            
+            // Insert the data into the database
+            try {
+                const partnerPreference = await PartnerPreference.create(preferenceData);
+                ctx.body = { status: 1, message: 'Partner preferences created successfully', data: personalDetails?.matriId };
+            } catch (err: any) {
+                ctx.status = 400;
+                console.error("Error inserting PartnerPreference details:", err);
+                ctx.body = { status: 3, message: 'Error inserting PartnerPreference details', error: err.message };
+            }
         } else {
             ctx.body = { status: 3, message: 'User creation failed' };
         }
@@ -506,7 +523,8 @@ export const getProfileData = async (ctx: Context) => {
             include:[{
             model: UserProfessionalDetails,
             as: 'professionalDetails'
-        }, {
+        },
+         {
             model: LocationDetails,
             as: 'locationDetails'
         },
@@ -527,7 +545,7 @@ export const getProfileData = async (ctx: Context) => {
             as: 'familyPropertyDetails'
         },
         {
-            model: PartnerPrefrence,
+            model: PartnerPreference,
             as: 'partnerDetails'
         },
         {
@@ -536,7 +554,10 @@ export const getProfileData = async (ctx: Context) => {
             where:{deleteStatus:1},
             attributes:['mobileNumber']
         }
-    ]});
+    ]}).catch((error:any)=>{
+        ctx.body = { status: 3, message: 'error finding data', data: [] };
+        return;
+    });
         ctx.body = { status: 1, message: 'Success', data: data };
     } catch (error: any) {
         ctx.status = 400;
