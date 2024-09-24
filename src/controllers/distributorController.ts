@@ -33,36 +33,6 @@ export const createDistributor = async (ctx: Context) => {
             paymentStatus: 0,
             createdAt: new Date(),
         });
-
-        if (ctx.request.files) {
-            const files: any[] = [
-                ctx.request.files.bannerImage1,
-                ctx.request.files.bannerImage2,
-                ctx.request.files.bannerImage3,
-                ctx.request.files.bannerImage4,
-                ctx.request.files.bannerImage5,
-                ctx.request.files.bannerImage6,
-                ctx.request.files.bannerImage7,
-                ctx.request.files.bannerImage8,
-                ctx.request.files.bannerImage9,
-                ctx.request.files.bannerImage10,
-            ].filter(Boolean); // Filter out undefined files
-
-            let list: any = [];
-            for (let i = 0; i < files.length; i++) {
-                const filePath = path.join('/uploads/distributorImages', files[i].newFilename);
-                let temData: any = {
-                    filePath: filePath,
-                    deleteStatus: 1,
-                    distributorId: distributorId,
-                    fileName: files[i].originalFilename,
-                    banner: i + 1
-                };
-                list.push(temData);
-            };
-            await DistributorDocuments.bulkCreate(list);
-        }
-
         ctx.body = { status: 1, message: "Success", data: [] };
     } catch (error) {
         console.error('Error:', error);
@@ -71,6 +41,36 @@ export const createDistributor = async (ctx: Context) => {
     }
 };
 
+
+export const createImages = async (ctx: Context) => {
+    const { images, distributorId } = ctx.request.body as any;
+
+    // Basic validation for required fields
+    if (!images || !distributorId) {
+        ctx.status = 400;
+        ctx.body = { status: 2, message: 'Images or distributorId missing in the request body' };
+        return;
+    }
+
+    // Insert images into user_image table
+    try {
+        // find the previous position of image
+        await DistributorDocuments.create({
+            distributorId: distributorId,
+            deleteStatus: 1,
+            filePath: images,
+            banner: 1
+        });
+        
+        ctx.status = 200;
+        ctx.body = { status: 1, message: 'Images inserted successfully' };
+    } catch (err: any) {
+        ctx.status = 400;
+        console.error("Error inserting Distributor images:", err);
+        ctx.body = { status: 3, message: 'Error inserting Distributor images', error: err.message };
+        return;
+    }
+};
 export const updateProfile = async (ctx: Context) => {
     try {
         const { fullName, companyName, passoword, email, mobileNumber, location, distributorId } = ctx.request.body as any;

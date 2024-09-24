@@ -2,7 +2,7 @@ import Router from 'koa-router';
 import koaBody from 'koa-body';
 import path from 'path';
 import fs from 'fs';
-import { createBureauUsers, getBureauUsers, updateProfile, bureauLogin } from '../controllers/bureauUserController';
+import { createBureauUsers, getBureauUsers, updateProfile, bureauLogin, createImages } from '../controllers/bureauUserController';
 
 const router = new Router();
 
@@ -28,7 +28,8 @@ const bodyParser = koaBody({
     }
 });
 
-router.post('/bureau/register', bodyParser, createBureauUsers);
+router.post('/bureau/register', createBureauUsers);
+router.post('/bureau/createImages', createImages);
 router.get('/bureau/getUsersById', getBureauUsers);
 router.get('/bureau/updateProfile', updateProfile);
 router.get('/bureau/login', bureauLogin);

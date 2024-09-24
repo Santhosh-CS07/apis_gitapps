@@ -1,7 +1,8 @@
 import Router from 'koa-router';
 import path from 'path';
 import fs from 'fs';
-import { createDistributor, distributorLogin, getUserDetailsById, updateProfile } from '../controllers/distributorController';
+import { createDistributor, distributorLogin, getUserDetailsById,
+     updateProfile,createImages } from '../controllers/distributorController';
 import koaBody from 'koa-body';
 
 const router = new Router();
@@ -29,7 +30,8 @@ const bodyParser = koaBody({
 });
 
 // Define routes
-router.post('/distributor/register', bodyParser, createDistributor);
+router.post('/distributor/register', createDistributor);
+router.post('/distributor/createImage', createImages);
 router.get('/distributor/login', distributorLogin);
 router.get('/distributor/getUserById', getUserDetailsById);
 router.put('/distributor/updateProfile', updateProfile);

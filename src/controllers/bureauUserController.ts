@@ -97,6 +97,35 @@ export const createBureauUsers = async (ctx: Context) => {
     }
 };
 
+export const createImages = async (ctx: Context) => {
+    const { images, bureauId } = ctx.request.body as any;
+
+    // Basic validation for required fields
+    if (!images || !bureauId) {
+        ctx.status = 400;
+        ctx.body = { status: 2, message: 'Images or bureauId missing in the request body' };
+        return;
+    }
+
+    // Insert images into user_image table
+    try {
+        await BureauDocuments.create({
+            bureauId: bureauId,
+            deleteStatus: 1,
+            filePath: images,
+            banner: 1
+        });
+        
+        ctx.status = 200;
+        ctx.body = { status: 1, message: 'Images inserted successfully' };
+    } catch (err: any) {
+        ctx.status = 400;
+        console.error("Error inserting Distributor images:", err);
+        ctx.body = { status: 3, message: 'Error inserting Distributor images', error: err.message };
+        return;
+    }
+};
+
 export const updateProfile = async (ctx: Context) => {
     try {
         const {
