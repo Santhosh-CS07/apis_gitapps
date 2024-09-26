@@ -15,6 +15,8 @@ interface BureauUserAttributes {
     createdAt?: Date;
     paymentStatus: number;
     deleteStatus: number;
+    expiryDate: string;
+
 }
 
 interface BureauUserCreationAttributes extends Optional<BureauUserAttributes, 'id'> { }
@@ -33,6 +35,7 @@ class BureauUser extends Model<BureauUserAttributes, BureauUserCreationAttribute
     public createdAt?: Date;
     public paymentStatus!: number;
     public deleteStatus!: number;
+    public expiryDate!: string;
 }
 
 BureauUser.init(
@@ -84,11 +87,15 @@ BureauUser.init(
             defaultValue: DataTypes.NOW,
         },
         paymentStatus: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.STRING,
             allowNull: false,
         },
         deleteStatus: {
             type: DataTypes.INTEGER,
+            allowNull: false,
+        },
+        expiryDate: {
+            type: DataTypes.STRING,
             allowNull: false,
         },
     },

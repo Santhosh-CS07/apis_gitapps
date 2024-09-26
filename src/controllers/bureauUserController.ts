@@ -17,16 +17,15 @@ export const createBureauUsers = async (ctx: Context) => {
             location,
             about,
             bureauId,
-            distributorId
+            distributorId,
+            paymentStatus,
+            expiryDate
         } = ctx.request.body as any;
 
         if (!ctx.request.body) {
             ctx.body = { status: 0, message: "Request body is missing", data: [] };
             return;
         };
-
-        console.log("email__", email);
-
         if (!email || !password || !ownerName || !mobileNumber) {
             ctx.body = { status: 0, message: "Required fields are missing", data: [] };
             return;
@@ -56,39 +55,10 @@ export const createBureauUsers = async (ctx: Context) => {
             bureauId,
             distributorId,
             deleteStatus: 1,
-            paymentStatus: 0,
+            paymentStatus: paymentStatus ? paymentStatus : 0,
             createdAt: new Date(),
+            expiryDate
         });
-
-        if (ctx.request.files) {
-            const files: any[] = [
-                ctx.request.files.bannerImage1,
-                ctx.request.files.bannerImage2,
-                ctx.request.files.bannerImage3,
-                ctx.request.files.bannerImage4,
-                ctx.request.files.bannerImage5,
-                ctx.request.files.bannerImage6,
-                ctx.request.files.bannerImage7,
-                ctx.request.files.bannerImage8,
-                ctx.request.files.bannerImage9,
-                ctx.request.files.bannerImage10,
-            ].filter(Boolean); // Filter out undefined files
-
-            let list: any = [];
-            for (let i = 0; i < files.length; i++) {
-                const filePath = path.join('/uploads/bureauImages', files[i].newFilename);
-                let temData: any = {
-                    filePath: filePath,
-                    deleteStatus: 1,
-                    distributorId: distributorId,
-                    fileName: files[i].originalFilename,
-                    banner: i + 1
-                };
-                list.push(temData);
-            };
-            await BureauDocuments.bulkCreate(list);
-        }
-
         ctx.body = { status: 1, message: "Successfully Created", data: user };
 
     } catch (error: any) {
@@ -98,7 +68,7 @@ export const createBureauUsers = async (ctx: Context) => {
 };
 
 export const createImages = async (ctx: Context) => {
-    const { images, bureauId } = ctx.request.body as any;
+    const { images, bureauId, order } = ctx.request.body as any;
 
     // Basic validation for required fields
     if (!images || !bureauId) {
@@ -113,7 +83,7 @@ export const createImages = async (ctx: Context) => {
             bureauId: bureauId,
             deleteStatus: 1,
             filePath: images,
-            banner: 1
+            banner: order
         });
         
         ctx.status = 200;
@@ -176,8 +146,8 @@ export const getBureauUsers = async (ctx: Context) => {
             where: {
                 distributorId: distributorId
             },
-            raw: true,
-            logging: true
+            order:[['id', 'DESC']],
+            raw: true
         });
 
         console.log("users:", users);
