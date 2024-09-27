@@ -16,19 +16,19 @@ import PartnerPreference from './PartnerPrefrence';
 export const setupAssociations = () => {
         DistributorUser.hasMany(DistributorDocuments, {  foreignKey: 'distributorId',
         sourceKey: 'distributorId', as: 'documents' });
-        User.hasMany(UserProfessionalDetails, {  foreignKey: 'matriId',
+        User.hasOne(UserProfessionalDetails, {  foreignKey: 'matriId',
         sourceKey: 'matriId', as: 'professionalDetails' });
-        User.hasMany(LocationDetails, {  foreignKey: 'matriId',
+        User.hasOne(LocationDetails, {  foreignKey: 'matriId',
         sourceKey: 'matriId', as: 'locationDetails' });
-        User.hasMany(ReligionDetails, {  foreignKey: 'matriId',
+        User.hasOne(ReligionDetails, {  foreignKey: 'matriId',
         sourceKey: 'matriId', as: 'religionDeails' });
         User.hasMany(UserImages, {  foreignKey: 'matriId',
         sourceKey: 'matriId', as: 'images' });
-        User.hasMany(FamilyDetails, {  foreignKey: 'matriId',
+        User.hasOne(FamilyDetails, {  foreignKey: 'matriId',
         sourceKey: 'matriId', as: 'familyDetails' });
-        User.hasMany(FamilyPropertyDetails, {  foreignKey: 'matriId',
+        User.hasOne(FamilyPropertyDetails, {  foreignKey: 'matriId',
         sourceKey: 'matriId', as: 'familyPropertyDetails' });
-        User.hasMany(PartnerPreference, {  foreignKey: 'matriId',
+        User.hasOne(PartnerPreference, {  foreignKey: 'matriId',
         sourceKey: 'matriId', as: 'partnerDetails' });
         User.hasOne(BureauUser, {  foreignKey: 'bureauId',
                 sourceKey: 'bureauId', as: 'bureau' });

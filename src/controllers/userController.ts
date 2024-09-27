@@ -225,8 +225,9 @@ export const createUser = async (ctx: Context) => {
                 totalPropertyValuePreference: partnerPreferenceDetails.totalPropertyValuePreference.length > 0 ? partnerPreferenceDetails.totalPropertyValuePreference.join('|') : 'Any',
                 countryPreference: partnerPreferenceDetails.countryPreference.length > 0 ? partnerPreferenceDetails.countryPreference.join('|') : 'Any',
                 statePreference: partnerPreferenceDetails.statePreference.length > 0 ? partnerPreferenceDetails.statePreference.join('|') : 'Any',
-                cityPreference: partnerPreferenceDetails.cityPreference.length > 0 ? partnerPreferenceDetails.cityPreference.join('|') : 'Any',
-                citizenshipPreference: partnerPreferenceDetails.citizenshipPreference.length > 0 ? partnerPreferenceDetails.citizenshipPreference.join('|') : 'Any',
+                cityPreference: partnerPreferenceDetails.cityPreference?.length > 0 ? partnerPreferenceDetails.cityPreference.join('|') : 'Any',
+                citizenshipPreference: partnerPreferenceDetails.citizenshipPreference?.length > 0 ? partnerPreferenceDetails.citizenshipPreference.join('|') : 'Any',
+                occupationPrefrence: partnerPreferenceDetails.occupationPrefrence?.length > 0 ? partnerPreferenceDetails.occupationPrefrence.join('|') : 'Any',
             };
             
             // Insert the data into the database
@@ -538,7 +539,8 @@ export const getProfileData = async (ctx: Context) => {
         },
         {
             model: FamilyDetails,
-            as: 'familyDetails'
+            as: 'familyDetails',
+            required:false
         },
         {
             model: FamilyPropertyDetails,
@@ -558,7 +560,11 @@ export const getProfileData = async (ctx: Context) => {
         ctx.body = { status: 3, message: 'error finding data', data: [] };
         return;
     });
+    if(data){
         ctx.body = { status: 1, message: 'Success', data: data };
+    } else {
+        ctx.body = { status: 3, message: 'Profile Not Available', data: [] };
+    }
     } catch (error: any) {
         ctx.status = 400;
         ctx.body = error.message;

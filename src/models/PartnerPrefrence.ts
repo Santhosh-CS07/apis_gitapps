@@ -35,6 +35,7 @@ interface PartnerPreferenceAttributes {
     statePreference: string;
     cityPreference: string;
     citizenshipPreference: string;
+    occupationPrefrence: string;
 }
 
 // Define attributes used when creating a new record, excluding the `id`
@@ -74,6 +75,7 @@ class PartnerPreference extends Model<PartnerPreferenceAttributes, PartnerPrefer
     public statePreference!: string;
     public cityPreference!: string;
     public citizenshipPreference!: string;
+    public occupationPrefrence!: string;
 }
 
 PartnerPreference.init(
@@ -207,6 +209,10 @@ PartnerPreference.init(
             type: DataTypes.STRING,
             allowNull: true,
         },
+        occupationPrefrence:{
+            type: DataTypes.STRING,
+            allowNull: true,
+        }
     },
     {
         sequelize,

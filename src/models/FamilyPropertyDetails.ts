@@ -48,6 +48,7 @@ class FamilyPropertyDetails extends Model<FamilyPropertyDetailsAttributes, Famil
     public moreProperties!: string;
     public totalPropertyValue!: string;
     public matriId!: string;
+
 }
 
 // Initialize the FamilyPropertyDetails model
@@ -129,7 +130,8 @@ FamilyPropertyDetails.init(
         matriId: {
             type: DataTypes.STRING,
             allowNull: true,
-        }
+        },
+      
     },
     {
         sequelize,
