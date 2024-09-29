@@ -60,7 +60,10 @@ export const createUser = async (ctx: Context) => {
             eatingHabit: personalDetailsTwo?.eatingHabit || "Any",
             physicalStatus: personalDetailsTwo?.physicalStatus || "Any",
             age: personalDetailsTwo?.age || "Any",
-            shortList: 0
+            shortList: 0,
+            maleKids: personalDetailsTwo?.maleKids || "Any",
+            femaleKids: personalDetailsTwo?.femaleKids || "Any",
+            kidsWith: personalDetailsTwo?.kidsWith || "Any"
         };
         let personalData: any;
         try {
@@ -195,41 +198,49 @@ export const createUser = async (ctx: Context) => {
                 ctx.body = { status: 3, message: 'Error inserting location details', error: err.message };
                 return;
             };
-            const preferenceData = {
-                matriId: personalDetails?.matriId, // Ensure personalDetails is defined and contains matriId
-                servicePreference: partnerPreferenceDetails.servicePreference.length > 0 ? partnerPreferenceDetails.servicePreference.join('|') : 'Any',
-                createdByPreference: partnerPreferenceDetails.createdByPreference.length > 0 ? partnerPreferenceDetails.createdByPreference.join('|') : 'Any',
-                religionPreference: partnerPreferenceDetails.religionPreference.length > 0 ? partnerPreferenceDetails.religionPreference.join('|') : 'Any',
-                castePreference: partnerPreferenceDetails.castePreference.length > 0 ? partnerPreferenceDetails.castePreference.join('|') : 'Any',
-                subCastePreference: partnerPreferenceDetails.subCastePreference.length > 0 ? partnerPreferenceDetails.subCastePreference.join('|') : 'Any',
-                maritalStatusPreference: partnerPreferenceDetails.maritalStatusPreference.length > 0 ? partnerPreferenceDetails.maritalStatusPreference.join('|') : 'Any',
-                childrenPreference: partnerPreferenceDetails.childrenPreference.length > 0 ? partnerPreferenceDetails.childrenPreference.join('|') : 'Any',
-                motherTonguePreference: partnerPreferenceDetails.motherTonguePreference.length > 0 ? partnerPreferenceDetails.motherTonguePreference.join('|') : 'Any',
+            const getPreferenceValue = (preference: any) => {
+                return Array.isArray(preference) && preference.length > 0 ? preference.join('|') : 'Any';
+              };
+              
+              const preferenceData: any = {
+                matriId: personalDetails?.matriId,
+                servicePreference: getPreferenceValue(partnerPreferenceDetails.servicePreference),
+                createdByPreference: getPreferenceValue(partnerPreferenceDetails.createdByPreference),
+                religionPreference: getPreferenceValue(partnerPreferenceDetails.religionPreference),
+                castePreference: getPreferenceValue(partnerPreferenceDetails.castePreference),
+                subCastePreference: getPreferenceValue(partnerPreferenceDetails.subCastePreference),
+                maritalStatusPreference: getPreferenceValue(partnerPreferenceDetails.maritalStatusPreference),
+                childrenPreference: getPreferenceValue(partnerPreferenceDetails.childrenPreference),
+                motherTonguePreference: getPreferenceValue(partnerPreferenceDetails.motherTonguePreference),
+                educationPreference: getPreferenceValue(partnerPreferenceDetails.educationPreference),
+                employeePreference: getPreferenceValue(partnerPreferenceDetails.employeePreference),
+                jobLocationPreference: getPreferenceValue(partnerPreferenceDetails.jobLocationPreference),
+                annualIncomePreference: getPreferenceValue(partnerPreferenceDetails.annualIncomePreference),
+                familyPreference: getPreferenceValue(partnerPreferenceDetails.familyPreference),
+                settledLocationPreference: getPreferenceValue(partnerPreferenceDetails.settledLocationPreference),
+                ownHousePreference: getPreferenceValue(partnerPreferenceDetails.ownHousePreference),
+                sftPreference: getPreferenceValue(partnerPreferenceDetails.sftPreference),
+                monthlyRentsPreference: getPreferenceValue(partnerPreferenceDetails.monthlyRentsPreference),
+                openPlotsLandsPreference: getPreferenceValue(partnerPreferenceDetails.openPlotsLandsPreference),
+                apartmentFlatsPreference: getPreferenceValue(partnerPreferenceDetails.apartmentFlatsPreference),
+                propertyLocationPreference: getPreferenceValue(partnerPreferenceDetails.propertyLocationPreference),
+                countryPreference: getPreferenceValue(partnerPreferenceDetails.countryPreference),
+                statePreference: getPreferenceValue(partnerPreferenceDetails.statePreference),
+                cityPreference: getPreferenceValue(partnerPreferenceDetails.cityPreference),
+                citizenshipPreference: getPreferenceValue(partnerPreferenceDetails.citizenshipPreference),
+                occupationPrefrence: getPreferenceValue(partnerPreferenceDetails.occupationPrefrence),
+                annualIncomeTo: partnerPreferenceDetails.annualIncomeTo || 'Any',
+                annualIncomeFrom: partnerPreferenceDetails.annualIncomeFrom || 'Any',
+                propertyValueTo: partnerPreferenceDetails.propertyValueTo || 'Any',
+                propertyValueFrom: partnerPreferenceDetails.propertyValueFrom || 'Any',
+                agricultureLandPreferenceTo: partnerPreferenceDetails.agricultureLandPreferenceTo || 'Any',
+                agricultureLandPreferenceFrom: partnerPreferenceDetails.agricultureLandPreferenceFrom || 'Any',
                 ageFrom: partnerPreferenceDetails.ageFrom,
                 ageTo: partnerPreferenceDetails.ageTo,
                 heightFrom: partnerPreferenceDetails.heightFrom,
                 heightTo: partnerPreferenceDetails.heightTo,
-                educationPreference: partnerPreferenceDetails.educationPreference.length > 0 ? partnerPreferenceDetails.educationPreference.join('|') : 'Any',
-                employeePreference: partnerPreferenceDetails.employeePreference.length > 0 ? partnerPreferenceDetails.employeePreference.join('|') : 'Any',
-                jobLocationPreference: partnerPreferenceDetails.jobLocationPreference.length > 0 ? partnerPreferenceDetails.jobLocationPreference.join('|') : 'Any',
-                annualIncomePreference: partnerPreferenceDetails.annualIncomePreference.length > 0 ? partnerPreferenceDetails.annualIncomePreference.join('|') : 'Any',
-                familyPreference: partnerPreferenceDetails.familyPreference.length > 0 ? partnerPreferenceDetails.familyPreference.join('|') : 'Any',
-                settledLocationPreference: partnerPreferenceDetails.settledLocationPreference.length > 0 ? partnerPreferenceDetails.settledLocationPreference.join('|') : 'Any',
-                ownHousePreference: partnerPreferenceDetails.ownHousePreference.length > 0 ? partnerPreferenceDetails.ownHousePreference.join('|') : 'Any',
-                sftPreference: partnerPreferenceDetails.sftPreference.length > 0 ? partnerPreferenceDetails.sftPreference.join('|') : 'Any',
-                monthlyRentsPreference: partnerPreferenceDetails.monthlyRentsPreference.length > 0 ? partnerPreferenceDetails.monthlyRentsPreference.join('|') : 'Any',
-                openPlotsLandsPreference: partnerPreferenceDetails.openPlotsLandsPreference.length > 0 ? partnerPreferenceDetails.openPlotsLandsPreference.join('|') : 'Any',
-                apartmentFlatsPreference: partnerPreferenceDetails.apartmentFlatsPreference.length > 0 ? partnerPreferenceDetails.apartmentFlatsPreference.join('|') : 'Any',
-                propertyLocationPreference: partnerPreferenceDetails.propertyLocationPreference.length > 0 ? partnerPreferenceDetails.propertyLocationPreference.join('|') : 'Any',
-                agricultureLandPreference: partnerPreferenceDetails.agricultureLandPreference.length > 0 ? partnerPreferenceDetails.agricultureLandPreference.join('|') : 'Any',
-                totalPropertyValuePreference: partnerPreferenceDetails.totalPropertyValuePreference.length > 0 ? partnerPreferenceDetails.totalPropertyValuePreference.join('|') : 'Any',
-                countryPreference: partnerPreferenceDetails.countryPreference.length > 0 ? partnerPreferenceDetails.countryPreference.join('|') : 'Any',
-                statePreference: partnerPreferenceDetails.statePreference.length > 0 ? partnerPreferenceDetails.statePreference.join('|') : 'Any',
-                cityPreference: partnerPreferenceDetails.cityPreference?.length > 0 ? partnerPreferenceDetails.cityPreference.join('|') : 'Any',
-                citizenshipPreference: partnerPreferenceDetails.citizenshipPreference?.length > 0 ? partnerPreferenceDetails.citizenshipPreference.join('|') : 'Any',
-                occupationPrefrence: partnerPreferenceDetails.occupationPrefrence?.length > 0 ? partnerPreferenceDetails.occupationPrefrence.join('|') : 'Any',
-            };
-            
+              };
+              
             // Insert the data into the database
             try {
                 const partnerPreference = await PartnerPreference.create(preferenceData);

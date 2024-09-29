@@ -137,9 +137,6 @@ export const getBureauUsers = async (ctx: Context) => {
         ctx.body = { status: 3, message: "Distributor ID is required", data: [] };
         return;
     }
-
-    console.log("distributorId:", typeof distributorId);
-
     try {
         // Ensure distributorId is correctly formatted if necessary
         const users = await BureauUser.findAll({

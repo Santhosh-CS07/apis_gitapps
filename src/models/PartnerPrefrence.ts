@@ -35,6 +35,12 @@ interface PartnerPreferenceAttributes {
     statePreference: string;
     cityPreference: string;
     citizenshipPreference: string;
+    annualIncomeFrom: string;
+    annualIncomeTo: string;
+    propertyValueTo: string;
+    propertyValueFrom: string;
+    agricultureLandPreferenceTo: string;
+    agricultureLandPreferenceFrom: string;
     occupationPrefrence: string;
 }
 
@@ -76,6 +82,12 @@ class PartnerPreference extends Model<PartnerPreferenceAttributes, PartnerPrefer
     public cityPreference!: string;
     public citizenshipPreference!: string;
     public occupationPrefrence!: string;
+    public annualIncomeFrom!: string;
+    public annualIncomeTo!: string;
+    public propertyValueTo!: string;
+    public propertyValueFrom!: string;
+    public agricultureLandPreferenceTo!: string;
+    public agricultureLandPreferenceFrom!: string;
 }
 
 PartnerPreference.init(
@@ -210,6 +222,30 @@ PartnerPreference.init(
             allowNull: true,
         },
         occupationPrefrence:{
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        annualIncomeTo:{
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        annualIncomeFrom:{
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        propertyValueTo:{
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        propertyValueFrom:{
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        agricultureLandPreferenceTo:{
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        agricultureLandPreferenceFrom:{
             type: DataTypes.STRING,
             allowNull: true,
         }

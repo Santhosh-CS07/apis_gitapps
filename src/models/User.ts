@@ -28,6 +28,9 @@ interface UserAttributes {
     birthTime: string;
     age: number;
     shortList: number;
+    maleKids: string;
+    femaleKids: string;
+    kidsWith: string;
 }
 
 interface UserCreationAttributes extends Optional<UserAttributes, 'id'> {}
@@ -59,6 +62,9 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
     public birthTime!: string;
     public age!: number;
     public shortList!: number;
+    public maleKids!: string;
+    public femaleKids!: string;
+    public kidsWith!: string;
 }
 
 User.init(
@@ -170,6 +176,18 @@ User.init(
         },
         shortList: {
             type: DataTypes.INTEGER.UNSIGNED,
+            allowNull: true,
+        },
+        maleKids: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        femaleKids: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        kidsWith: {
+            type: DataTypes.STRING,
             allowNull: true,
         },
     },
