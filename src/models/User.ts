@@ -21,7 +21,7 @@ interface UserAttributes {
     drinkingHabit: string;
     smokingHabit: string;
     deleteStatus: number;
-    paymentStatus: number;
+    paymentStatus: string;
     createdBy: string;
     bureauId: string;
     dateOfBirth: string;
@@ -55,7 +55,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
     public drinkingHabit!: string;
     public smokingHabit!: string;
     public deleteStatus!: number;
-    public paymentStatus!: number;
+    public paymentStatus!: string;
     public createdBy!: string;
     public bureauId!: string;
     public dateOfBirth!: string;
@@ -150,9 +150,8 @@ User.init(
             defaultValue: 1,
         },
         paymentStatus: {
-            type: DataTypes.INTEGER.UNSIGNED,
+            type: DataTypes.STRING,
             allowNull: true,
-            defaultValue: 0,
         },
         createdBy: {
             type: DataTypes.STRING,

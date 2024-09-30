@@ -63,7 +63,8 @@ export const createUser = async (ctx: Context) => {
             shortList: 0,
             maleKids: personalDetailsTwo?.maleKids || "Any",
             femaleKids: personalDetailsTwo?.femaleKids || "Any",
-            kidsWith: personalDetailsTwo?.kidsWith || "Any"
+            kidsWith: personalDetailsTwo?.kidsWith || "Any",
+            paymentStatus: personalDetails?.paymentStatus || "Any"
         };
         let personalData: any;
         try {
@@ -207,7 +208,7 @@ export const createUser = async (ctx: Context) => {
                 servicePreference: getPreferenceValue(partnerPreferenceDetails.servicePreference),
                 createdByPreference: getPreferenceValue(partnerPreferenceDetails.createdByPreference),
                 religionPreference: getPreferenceValue(partnerPreferenceDetails.religionPreference),
-                castePreference: getPreferenceValue(partnerPreferenceDetails.castePreference),
+                castePreference: partnerPreferenceDetails.castePreference.join('|') || "Caste No Bar",
                 subCastePreference: getPreferenceValue(partnerPreferenceDetails.subCastePreference),
                 maritalStatusPreference: getPreferenceValue(partnerPreferenceDetails.maritalStatusPreference),
                 childrenPreference: getPreferenceValue(partnerPreferenceDetails.childrenPreference),
