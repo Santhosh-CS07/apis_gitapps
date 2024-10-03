@@ -365,38 +365,81 @@ export const getSearchData = async (ctx: Context) => {
   };
   
 
-
-export const getFeMaleProfiles = async (ctx: Context) => {
+  export const getFeMaleProfiles = async (ctx: Context) => {
+    const { page = 1, limit = 50 } = ctx.query as any; // Pagination parameters from query
+    const offset = (page - 1) * limit;
+  
     try {
-        const users = await User.findAll({where:{gender:"Female", deleteStatus:1},
-            attributes:['name', 'matriId', 'age', 'height', 'createdBy', 'shortList'],
-            order: [['id', 'DESC']],
-            include:[{
+      const users = await User.findAll({
+        where: { gender: "Female", deleteStatus: 1 },
+        attributes: ['name', 'matriId', 'age', 'height', 'createdBy', 'shortList'],
+        order: [['id', 'DESC']],
+        limit: parseInt(limit),    // Limiting the number of profiles
+        offset: offset,            // Offset for pagination
+        include: [
+          {
             model: UserProfessionalDetails,
             as: 'professionalDetails',
-            attributes:['education', 'occupation', 'annualIncome']
-        }, {
+            attributes: ['education', 'occupation', 'annualIncome']
+          },
+          {
             model: LocationDetails,
             as: 'locationDetails',
             attributes: ['country', 'state', 'city']
-        },
-        {
+          },
+          {
             model: ReligionDetails,
             as: 'religionDeails',
             attributes: ['caste']
-        },
-        {
+          },
+          {
             model: UserImages,
             as: 'images',
-            attributes: ['image', 'position']
-        }
-    ]});
-        ctx.body = { status: 1, message: 'Success', data: users };
+            attributes: ['image', 'position'],
+            limit: 1, // Limit to 1 image per user
+          }
+        ]
+      });
+  
+      ctx.body = { status: 1, message: 'Success', data: users };
     } catch (error: any) {
-        ctx.status = 400;
-        ctx.body = error.message;
+      ctx.status = 400;
+      ctx.body = error.message;
     }
-};
+  };
+  
+
+// export const getFeMaleProfiles = async (ctx: Context) => {
+//     try {
+//         const users = await User.findAll({where:{gender:"Female", deleteStatus:1},
+//             attributes:['name', 'matriId', 'age', 'height', 'createdBy', 'shortList'],
+//             order: [['id', 'DESC']],
+//             include:[{
+//             model: UserProfessionalDetails,
+//             as: 'professionalDetails',
+//             attributes:['education', 'occupation', 'annualIncome']
+//         }, {
+//             model: LocationDetails,
+//             as: 'locationDetails',
+//             attributes: ['country', 'state', 'city']
+//         },
+//         {
+//             model: ReligionDetails,
+//             as: 'religionDeails',
+//             attributes: ['caste']
+//         },
+//         {
+//             model: UserImages,
+//             as: 'images',
+//             attributes: ['image', 'position']
+//         }
+//     ]});
+//         ctx.body = { status: 1, message: 'Success', data: users };
+//     } catch (error: any) {
+//         ctx.status = 400;
+//         ctx.body = error.message;
+//     }
+// };
 
 export const getMaleProfiles = async (ctx: Context) => {
     try {
@@ -547,7 +590,9 @@ export const getProfileData = async (ctx: Context) => {
         },
         {
             model: UserImages,
-            as: 'images'
+            as: 'images',
+            attributes:['image'],
+            where:{deleteStatus:1}
         },
         {
             model: FamilyDetails,
