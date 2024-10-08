@@ -5,7 +5,7 @@ import {
     getAnnualIncome, getCity, getCountry,
     getState, getHeight, getWeight, getExtraSkills, getOccupation, getRaasiStar, getStar, getRaasi,
     getFeMaleProfiles, getMaleProfiles, getShortListProfiles, getMyProfiles, getProfileData,
-     getSearchData, getUserDataById, createImages, deleteUser, updateShortList
+    getSearchData, getUserDataById, createImages, deleteUser, updateShortList
 } from '../controllers/userController';
 
 const router = new Router();

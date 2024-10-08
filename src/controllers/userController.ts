@@ -70,7 +70,7 @@ export const createUser = async (ctx: Context) => {
         try {
             personalData = await User.create(userPersonalData);
             console.log("User created successfully:");
-        } catch (err:any) {
+        } catch (err: any) {
             ctx.status = 400;
             console.error("Error inserting personal data:", err);
             ctx.body = { status: 3, message: 'Error inserting personal data', error: err.message };
@@ -94,8 +94,8 @@ export const createUser = async (ctx: Context) => {
 
             try {
                 await ReligionDetails.create(religionData);
-            } catch (err:any) {
-            ctx.status = 400;
+            } catch (err: any) {
+                ctx.status = 400;
                 console.error("Error inserting religion details:", err);
                 ctx.body = { status: 3, message: 'Error inserting religion details', error: err.message };
                 return;
@@ -117,8 +117,8 @@ export const createUser = async (ctx: Context) => {
 
             try {
                 await UserProfessionalDetails.create(professionalData);
-            } catch (err:any) {
-            ctx.status = 400;
+            } catch (err: any) {
+                ctx.status = 400;
                 console.error("Error inserting professional details:", err);
                 ctx.body = { status: 3, message: 'Error inserting professional details', error: err.message };
                 return;
@@ -144,8 +144,8 @@ export const createUser = async (ctx: Context) => {
 
             try {
                 await FamilyDetails.create(familyData);
-            } catch (err:any) {
-            ctx.status = 400;
+            } catch (err: any) {
+                ctx.status = 400;
                 console.error("Error inserting family details:", err);
                 ctx.body = { status: 3, message: 'Error inserting family details', error: err.message };
                 return;
@@ -175,8 +175,8 @@ export const createUser = async (ctx: Context) => {
 
             try {
                 await FamilyPropertyDetails.create(familyPropertyDeatils);
-            } catch (err:any) {
-            ctx.status = 400;
+            } catch (err: any) {
+                ctx.status = 400;
                 console.error("Error inserting family property details:", err);
                 ctx.body = { status: 3, message: 'Error inserting family property details', error: err.message };
                 return;
@@ -193,17 +193,17 @@ export const createUser = async (ctx: Context) => {
 
             try {
                 await LocationDetails.create(locatinDetailsData);
-            } catch (err:any) {
-            ctx.status = 400;
+            } catch (err: any) {
+                ctx.status = 400;
                 console.error("Error inserting location details:", err);
                 ctx.body = { status: 3, message: 'Error inserting location details', error: err.message };
                 return;
             };
             const getPreferenceValue = (preference: any) => {
                 return Array.isArray(preference) && preference.length > 0 ? preference.join('|') : 'Any';
-              };
-              
-              const preferenceData: any = {
+            };
+
+            const preferenceData: any = {
                 matriId: personalDetails?.matriId,
                 servicePreference: getPreferenceValue(partnerPreferenceDetails.servicePreference),
                 createdByPreference: getPreferenceValue(partnerPreferenceDetails.createdByPreference),
@@ -240,8 +240,8 @@ export const createUser = async (ctx: Context) => {
                 ageTo: partnerPreferenceDetails.ageTo,
                 heightFrom: partnerPreferenceDetails.heightFrom,
                 heightTo: partnerPreferenceDetails.heightTo,
-              };
-              
+            };
+
             // Insert the data into the database
             try {
                 const partnerPreference = await PartnerPreference.create(preferenceData);
@@ -254,160 +254,178 @@ export const createUser = async (ctx: Context) => {
         } else {
             ctx.body = { status: 3, message: 'User creation failed' };
         }
-    } catch (err:any) {
+    } catch (err: any) {
         console.error("Unexpected error:", err);
         ctx.body = { status: 500, message: 'Unexpected error occurred', error: err.message };
     }
 };
 
 export const createImages = async (ctx: Context) => {
-    const { images, matriId } = ctx.request.body as any;
+    const { matriId, order } = ctx.request.body as any;
 
-    // Basic validation for required fields
-    if (!images || !matriId) {
-        ctx.status = 400;
-        ctx.body = { status: 2, message: 'Images or MatriId missing in the request body' };
-        return;
+    // console.log(ctx.request.body);
+    // console.log(ctx.request.files)
+    // console.log("chkkkkkkk")
+
+    // return false
+
+    if (ctx.request.method === 'POST' && ctx.request.files) {
+        const files: any = ctx.request.files;  // Uploaded file(s)
+        // Log the uploaded file(s) for debugging
+        // console.log('Uploaded files:', files);
+
+        // ctx.body = {
+        //     status: 'success',
+        //     message: 'File uploaded successfully!',
+        //     files
+        // };
+
+        // Insert images into user_image table
+        try {
+            for (let i = 0; i < files.images.length; i++) {
+                await UserImages.create({
+                    image: 'uploads/' + files.images[i].newFilename,
+                    matriId: matriId,
+                    position: order,
+                    deleteStatus: 1
+                });
+            };
+
+
+
+            ctx.status = 200;
+            ctx.body = { status: 1, message: 'Images inserted successfully' };
+        } catch (err: any) {
+            ctx.status = 400;
+            console.error("Error inserting user images:", err);
+            ctx.body = { status: 3, message: 'Error inserting user images', error: err.message };
+            return;
+        }
+    } else {
+        ctx.body = 'Please upload a file.';
     }
 
-    // Insert images into user_image table
-    try {
-        await UserImages.create({
-            image: images,
-            matriId: matriId,
-            position: 1,
-            deleteStatus: 1
-        });
-        
-        ctx.status = 200;
-        ctx.body = { status: 1, message: 'Images inserted successfully' };
-    } catch (err: any) {
-        ctx.status = 400;
-        console.error("Error inserting user images:", err);
-        ctx.body = { status: 3, message: 'Error inserting user images', error: err.message };
-        return;
-    }
 };
 
 
 
 export const getSearchData = async (ctx: Context) => {
     const { caste, country, maritalStatus, state, gender, city } = ctx.request.body as any;
-  
-    try {
-      // Construct dynamic where clauses for filtering
-      const whereConditions: any = {
-        deleteStatus: 1,
-      };
-  
-      if (gender && gender.length > 0) {
-        whereConditions.gender = gender; // Filter by gender
-      }
-  
-      if (maritalStatus && maritalStatus.length > 0) {
-        whereConditions.maritalStatus = maritalStatus; // Filter by marital status
-      }
-  
-      const locationWhereConditions: any = {};
-      if (country && country.length > 0) {
-        locationWhereConditions.country = country; // Filter by country
-      }
-      if (state && state.length > 0) {
-        locationWhereConditions.state = state; // Filter by state
-      }
-      if (city && city.length > 0) {
-        locationWhereConditions.city = city; // Filter by city
-      }
-  
-      const religionWhereConditions: any = {};
-      if (caste && caste.length > 0) {
-        religionWhereConditions.caste = caste; // Filter by caste
-      }
-  
-      // Perform the query
-      const users = await User.findAll({
-        where: whereConditions,
-        attributes: ['name', 'matriId', 'age', 'height', 'createdBy'],
-        order: [['id', 'DESC']],
-        include: [
-          {
-            model: UserProfessionalDetails,
-            as: 'professionalDetails',
-            attributes: ['education', 'occupation', 'annualIncome'],
-          },
-          {
-            model: LocationDetails,
-            as: 'locationDetails',
-            attributes: ['country', 'state', 'city'],
-            where: locationWhereConditions, // Add location filter conditions
-          },
-          {
-            model: ReligionDetails,
-            as: 'religionDeails',
-            attributes: ['caste'],
-            where: religionWhereConditions, // Add religion filter conditions
-          },
-          {
-            model: UserImages,
-            as: 'images',
-            attributes: ['image', 'position'],
-          },
-        ],
-      });
-  
-      // Send success response
-      ctx.body = { status: 1, message: 'Success', data: users };
-    } catch (error: any) {
-      // Send error response
-      ctx.status = 400;
-      ctx.body = { status: 0, message: error.message };
-    }
-  };
-  
 
-  export const getFeMaleProfiles = async (ctx: Context) => {
+    try {
+        // Construct dynamic where clauses for filtering
+        const whereConditions: any = {
+            deleteStatus: 1,
+        };
+
+        if (gender && gender.length > 0) {
+            whereConditions.gender = gender; // Filter by gender
+        }
+
+        if (maritalStatus && maritalStatus.length > 0) {
+            whereConditions.maritalStatus = maritalStatus; // Filter by marital status
+        }
+
+        const locationWhereConditions: any = {};
+        if (country && country.length > 0) {
+            locationWhereConditions.country = country; // Filter by country
+        }
+        if (state && state.length > 0) {
+            locationWhereConditions.state = state; // Filter by state
+        }
+        if (city && city.length > 0) {
+            locationWhereConditions.city = city; // Filter by city
+        }
+
+        const religionWhereConditions: any = {};
+        if (caste && caste.length > 0) {
+            religionWhereConditions.caste = caste; // Filter by caste
+        }
+
+        // Perform the query
+        const users = await User.findAll({
+            where: whereConditions,
+            attributes: ['name', 'matriId', 'age', 'height', 'createdBy'],
+            order: [['id', 'DESC']],
+            include: [
+                {
+                    model: UserProfessionalDetails,
+                    as: 'professionalDetails',
+                    attributes: ['education', 'occupation', 'annualIncome'],
+                },
+                {
+                    model: LocationDetails,
+                    as: 'locationDetails',
+                    attributes: ['country', 'state', 'city'],
+                    where: locationWhereConditions, // Add location filter conditions
+                },
+                {
+                    model: ReligionDetails,
+                    as: 'religionDeails',
+                    attributes: ['caste'],
+                    where: religionWhereConditions, // Add religion filter conditions
+                },
+                {
+                    model: UserImages,
+                    as: 'images',
+                    attributes: ['image', 'position'],
+                },
+            ],
+        });
+
+        // Send success response
+        ctx.body = { status: 1, message: 'Success', data: users };
+    } catch (error: any) {
+        // Send error response
+        ctx.status = 400;
+        ctx.body = { status: 0, message: error.message };
+    }
+};
+
+
+export const getFeMaleProfiles = async (ctx: Context) => {
     const { page = 1, limit = 50 } = ctx.query as any; // Pagination parameters from query
     const offset = (page - 1) * limit;
-  
+
     try {
-      const users = await User.findAll({
-        where: { gender: "Female", deleteStatus: 1 },
-        attributes: ['name', 'matriId', 'age', 'height', 'createdBy', 'shortList'],
-        order: [['id', 'DESC']],
-        limit: parseInt(limit),    // Limiting the number of profiles
-        offset: offset,            // Offset for pagination
-        include: [
-          {
-            model: UserProfessionalDetails,
-            as: 'professionalDetails',
-            attributes: ['education', 'occupation', 'annualIncome']
-          },
-          {
-            model: LocationDetails,
-            as: 'locationDetails',
-            attributes: ['country', 'state', 'city']
-          },
-          {
-            model: ReligionDetails,
-            as: 'religionDeails',
-            attributes: ['caste']
-          },
-          {
-            model: UserImages,
-            as: 'images',
-            attributes: ['image', 'position'],
-            limit: 1, // Limit to 1 image per user
-          }
-        ]
-      });
-  
-      ctx.body = { status: 1, message: 'Success', data: users };
+        const users = await User.findAll({
+            where: { gender: "Female", deleteStatus: 1 },
+            attributes: ['name', 'matriId', 'age', 'height', 'createdBy', 'shortList'],
+            order: [['id', 'DESC']],
+            limit: parseInt(limit),    // Limiting the number of profiles
+            offset: offset,            // Offset for pagination
+            include: [
+                {
+                    model: UserProfessionalDetails,
+                    as: 'professionalDetails',
+                    attributes: ['education', 'occupation', 'annualIncome']
+                },
+                {
+                    model: LocationDetails,
+                    as: 'locationDetails',
+                    attributes: ['country', 'state', 'city']
+                },
+                {
+                    model: ReligionDetails,
+                    as: 'religionDeails',
+                    attributes: ['caste']
+                },
+                {
+                    model: UserImages,
+                    as: 'images',
+                    attributes: ['image', 'position'],
+                    limit: 1, // Limit to 1 image per user
+                }
+            ]
+        });
+
+        ctx.body = { status: 1, message: 'Success', data: users };
     } catch (error: any) {
-      ctx.status = 400;
-      ctx.body = error.message;
+        ctx.status = 400;
+        ctx.body = error.message;
     }
-  };
-  
+};
+
 
 // export const getFeMaleProfiles = async (ctx: Context) => {
 //     try {
@@ -443,29 +461,31 @@ export const getSearchData = async (ctx: Context) => {
 
 export const getMaleProfiles = async (ctx: Context) => {
     try {
-        const users = await User.findAll({where:{gender:"Male", deleteStatus:1},
-            attributes:['name', 'matriId', 'age', 'height', 'createdBy', 'shortList'],
+        const users = await User.findAll({
+            where: { gender: "Male", deleteStatus: 1 },
+            attributes: ['name', 'matriId', 'age', 'height', 'createdBy', 'shortList'],
             order: [['id', 'DESC']],
-            include:[{
-            model: UserProfessionalDetails,
-            as: 'professionalDetails',
-            attributes:['education', 'occupation', 'annualIncome']
-        }, {
-            model: LocationDetails,
-            as: 'locationDetails',
-            attributes: ['country', 'state', 'city']
-        },
-        {
-            model: ReligionDetails,
-            as: 'religionDeails',
-            attributes: ['caste']
-        },
-        {
-            model: UserImages,
-            as: 'images',
-            attributes: ['image', 'position']
-        }
-    ]});
+            include: [{
+                model: UserProfessionalDetails,
+                as: 'professionalDetails',
+                attributes: ['education', 'occupation', 'annualIncome']
+            }, {
+                model: LocationDetails,
+                as: 'locationDetails',
+                attributes: ['country', 'state', 'city']
+            },
+            {
+                model: ReligionDetails,
+                as: 'religionDeails',
+                attributes: ['caste']
+            },
+            {
+                model: UserImages,
+                as: 'images',
+                attributes: ['image', 'position']
+            }
+            ]
+        });
         ctx.body = { status: 1, message: 'Success', data: users };
     } catch (error: any) {
         ctx.status = 400;
@@ -476,29 +496,31 @@ export const getMaleProfiles = async (ctx: Context) => {
 export const getMyProfiles = async (ctx: Context) => {
     const { bureauId, gender } = ctx.query as any
     try {
-        const users = await User.findAll({where:{gender:gender, bureauId:bureauId, deleteStatus:1},
-            attributes:['name', 'matriId', 'age', 'height', 'createdBy', 'mobileNumber', 'password', 'shortList'],
+        const users = await User.findAll({
+            where: { gender: gender, bureauId: bureauId, deleteStatus: 1 },
+            attributes: ['name', 'matriId', 'age', 'height', 'createdBy', 'mobileNumber', 'password', 'shortList'],
             order: [['id', 'DESC']],
-            include:[{
-            model: UserProfessionalDetails,
-            as: 'professionalDetails',
-            attributes:['education', 'occupation', 'annualIncome']
-        }, {
-            model: LocationDetails,
-            as: 'locationDetails',
-            attributes: ['country', 'state', 'city']
-        },
-        {
-            model: ReligionDetails,
-            as: 'religionDeails',
-            attributes: ['caste']
-        },
-        {
-            model: UserImages,
-            as: 'images',
-            attributes: ['image', 'position']
-        }
-    ]});
+            include: [{
+                model: UserProfessionalDetails,
+                as: 'professionalDetails',
+                attributes: ['education', 'occupation', 'annualIncome']
+            }, {
+                model: LocationDetails,
+                as: 'locationDetails',
+                attributes: ['country', 'state', 'city']
+            },
+            {
+                model: ReligionDetails,
+                as: 'religionDeails',
+                attributes: ['caste']
+            },
+            {
+                model: UserImages,
+                as: 'images',
+                attributes: ['image', 'position']
+            }
+            ]
+        });
         ctx.body = { status: 1, message: 'Success', data: users };
     } catch (error: any) {
         ctx.status = 400;
@@ -509,29 +531,31 @@ export const getMyProfiles = async (ctx: Context) => {
 export const getShortListProfiles = async (ctx: Context) => {
     const { bureauId } = ctx.query as any;
     try {
-        const users = await User.findAll({where:{shortList: 1, bureauId:bureauId, deleteStatus:1},
-            attributes:['name', 'matriId', 'age', 'height', 'createdBy'],
+        const users = await User.findAll({
+            where: { shortList: 1, bureauId: bureauId, deleteStatus: 1 },
+            attributes: ['name', 'matriId', 'age', 'height', 'createdBy'],
             order: [['id', 'DESC']],
-            include:[{
-            model: UserProfessionalDetails,
-            as: 'professionalDetails',
-            attributes:['education', 'occupation', 'annualIncome']
-        }, {
-            model: LocationDetails,
-            as: 'locationDetails',
-            attributes: ['country', 'state', 'city']
-        },
-        {
-            model: ReligionDetails,
-            as: 'religionDeails',
-            attributes: ['caste']
-        },
-        {
-            model: UserImages,
-            as: 'images',
-            attributes: ['image', 'position']
-        }
-    ]});
+            include: [{
+                model: UserProfessionalDetails,
+                as: 'professionalDetails',
+                attributes: ['education', 'occupation', 'annualIncome']
+            }, {
+                model: LocationDetails,
+                as: 'locationDetails',
+                attributes: ['country', 'state', 'city']
+            },
+            {
+                model: ReligionDetails,
+                as: 'religionDeails',
+                attributes: ['caste']
+            },
+            {
+                model: UserImages,
+                as: 'images',
+                attributes: ['image', 'position']
+            }
+            ]
+        });
         ctx.body = { status: 1, message: 'Success', data: users };
     } catch (error: any) {
         ctx.status = 400;
@@ -542,28 +566,30 @@ export const getShortListProfiles = async (ctx: Context) => {
 export const getUserDataById = async (ctx: Context) => {
     const { matriId } = ctx.query as any;
     try {
-        const users = await User.findOne({where:{matriId:matriId, deleteStatus:1},
-            attributes:['name', 'matriId', 'age', 'height', 'createdBy'],
-            include:[{
-            model: UserProfessionalDetails,
-            as: 'professionalDetails',
-            attributes:['education', 'occupation', 'annualIncome']
-        }, {
-            model: LocationDetails,
-            as: 'locationDetails',
-            attributes: ['country', 'state', 'city']
-        },
-        {
-            model: ReligionDetails,
-            as: 'religionDeails',
-            attributes: ['caste']
-        },
-        {
-            model: UserImages,
-            as: 'images',
-            attributes: ['image', 'position']
-        }
-    ]});
+        const users = await User.findOne({
+            where: { matriId: matriId, deleteStatus: 1 },
+            attributes: ['name', 'matriId', 'age', 'height', 'createdBy'],
+            include: [{
+                model: UserProfessionalDetails,
+                as: 'professionalDetails',
+                attributes: ['education', 'occupation', 'annualIncome']
+            }, {
+                model: LocationDetails,
+                as: 'locationDetails',
+                attributes: ['country', 'state', 'city']
+            },
+            {
+                model: ReligionDetails,
+                as: 'religionDeails',
+                attributes: ['caste']
+            },
+            {
+                model: UserImages,
+                as: 'images',
+                attributes: ['image', 'position']
+            }
+            ]
+        });
         ctx.body = { status: 1, message: 'Success', data: users };
     } catch (error: any) {
         ctx.status = 400;
@@ -575,53 +601,55 @@ export const getUserDataById = async (ctx: Context) => {
 export const getProfileData = async (ctx: Context) => {
     const { matriId } = ctx.query as any;
     try {
-        const data = await User.findOne({where:{matriId: matriId, deleteStatus:1},
-            include:[{
-            model: UserProfessionalDetails,
-            as: 'professionalDetails'
-        },
-         {
-            model: LocationDetails,
-            as: 'locationDetails'
-        },
-        {
-            model: ReligionDetails,
-            as: 'religionDeails'
-        },
-        {
-            model: UserImages,
-            as: 'images',
-            attributes:['image'],
-            where:{deleteStatus:1}
-        },
-        {
-            model: FamilyDetails,
-            as: 'familyDetails',
-            required:false
-        },
-        {
-            model: FamilyPropertyDetails,
-            as: 'familyPropertyDetails'
-        },
-        {
-            model: PartnerPreference,
-            as: 'partnerDetails'
-        },
-        {
-            model: BureauUser,
-            as: 'bureau',
-            where:{deleteStatus:1},
-            attributes:['mobileNumber']
+        const data = await User.findOne({
+            where: { matriId: matriId, deleteStatus: 1 },
+            include: [{
+                model: UserProfessionalDetails,
+                as: 'professionalDetails'
+            },
+            {
+                model: LocationDetails,
+                as: 'locationDetails'
+            },
+            {
+                model: ReligionDetails,
+                as: 'religionDeails'
+            },
+            {
+                model: UserImages,
+                as: 'images',
+                attributes: ['image'],
+                where: { deleteStatus: 1 }
+            },
+            {
+                model: FamilyDetails,
+                as: 'familyDetails',
+                required: false
+            },
+            {
+                model: FamilyPropertyDetails,
+                as: 'familyPropertyDetails'
+            },
+            {
+                model: PartnerPreference,
+                as: 'partnerDetails'
+            },
+            {
+                model: BureauUser,
+                as: 'bureau',
+                where: { deleteStatus: 1 },
+                attributes: ['mobileNumber']
+            }
+            ]
+        }).catch((error: any) => {
+            ctx.body = { status: 3, message: 'error finding data', data: [] };
+            return;
+        });
+        if (data) {
+            ctx.body = { status: 1, message: 'Success', data: data };
+        } else {
+            ctx.body = { status: 3, message: 'Profile Not Available', data: [] };
         }
-    ]}).catch((error:any)=>{
-        ctx.body = { status: 3, message: 'error finding data', data: [] };
-        return;
-    });
-    if(data){
-        ctx.body = { status: 1, message: 'Success', data: data };
-    } else {
-        ctx.body = { status: 3, message: 'Profile Not Available', data: [] };
-    }
     } catch (error: any) {
         ctx.status = 400;
         ctx.body = error.message;
@@ -846,69 +874,69 @@ export const getRaasiStar = async (ctx: Context) => {
 
 
 export const deleteUser = async (ctx: Context) => {
-    const { matriId } = ctx.query as any;  
+    const { matriId } = ctx.query as any;
     try {
-        await User.destroy({where:{matriId: matriId}}).catch((error:any)=>{
+        await User.destroy({ where: { matriId: matriId } }).catch((error: any) => {
             ctx.body = { status: 3, message: 'delete failed...', data: [] };
             return;
         });
 
-        await UserImages.destroy({where:{matriId: matriId}}).catch((error:any)=>{
+        await UserImages.destroy({ where: { matriId: matriId } }).catch((error: any) => {
             ctx.body = { status: 3, message: 'delete failed...', data: [] };
             return;
         });
 
-        await UserProfessionalDetails.destroy({where:{matriId: matriId}}).catch((error:any)=>{
+        await UserProfessionalDetails.destroy({ where: { matriId: matriId } }).catch((error: any) => {
             ctx.body = { status: 3, message: 'delete failed...', data: [] };
             return;
         });
 
-        await PartnerPrefrence.destroy({where:{matriId: matriId}}).catch((error:any)=>{
+        await PartnerPrefrence.destroy({ where: { matriId: matriId } }).catch((error: any) => {
             ctx.body = { status: 3, message: 'delete failed...', data: [] };
             return;
         });
-        await ReligionDetails.destroy({where:{matriId: matriId}}).catch((error:any)=>{
-            ctx.body = { status: 3, message: 'delete failed...', data: [] };
-            return;
-        });
-
-        await FamilyDetails.destroy({where:{matriId: matriId}}).catch((error:any)=>{
-            ctx.body = { status: 3, message: 'delete failed...', data: [] };
-            return;
-        });
-        await FamilyPropertyDetails.destroy({where:{matriId: matriId}}).catch((error:any)=>{
+        await ReligionDetails.destroy({ where: { matriId: matriId } }).catch((error: any) => {
             ctx.body = { status: 3, message: 'delete failed...', data: [] };
             return;
         });
 
-        await LocationDetails.destroy({where:{matriId: matriId}}).catch((error:any)=>{
+        await FamilyDetails.destroy({ where: { matriId: matriId } }).catch((error: any) => {
+            ctx.body = { status: 3, message: 'delete failed...', data: [] };
+            return;
+        });
+        await FamilyPropertyDetails.destroy({ where: { matriId: matriId } }).catch((error: any) => {
             ctx.body = { status: 3, message: 'delete failed...', data: [] };
             return;
         });
 
-      // Send success response
-      ctx.body = { status: 1, message: 'Success', data: [] };
+        await LocationDetails.destroy({ where: { matriId: matriId } }).catch((error: any) => {
+            ctx.body = { status: 3, message: 'delete failed...', data: [] };
+            return;
+        });
+
+        // Send success response
+        ctx.body = { status: 1, message: 'Success', data: [] };
     } catch (error: any) {
-      // Send error response
-      ctx.status = 400;
-      ctx.body = { status: 0, message: error.message };
+        // Send error response
+        ctx.status = 400;
+        ctx.body = { status: 0, message: error.message };
     }
-  };
+};
 
 
-  export const updateShortList = async (ctx: Context) => {
-    const { matriId, status } =ctx.request.body as any;
+export const updateShortList = async (ctx: Context) => {
+    const { matriId, status } = ctx.request.body as any;
     try {
-        await User.update({shortList:status},{where:{matriId: matriId}}).catch((error:any)=>{
+        await User.update({ shortList: status }, { where: { matriId: matriId } }).catch((error: any) => {
             ctx.body = { status: 3, message: 'delete failed...', data: [] };
             return;
         });
 
-      // Send success response
-      ctx.body = { status: 1, message: 'Success', data: [] };
+        // Send success response
+        ctx.body = { status: 1, message: 'Success', data: [] };
     } catch (error: any) {
-      // Send error response
-      ctx.status = 400;
-      ctx.body = { status: 0, message: error.message };
+        // Send error response
+        ctx.status = 400;
+        ctx.body = { status: 0, message: error.message };
     }
-  };
+};
