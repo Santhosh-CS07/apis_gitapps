@@ -85,7 +85,7 @@ export const createImages = async (ctx: Context) => {
             filePath: images,
             banner: order
         });
-        
+
         ctx.status = 200;
         ctx.body = { status: 1, message: 'Images inserted successfully' };
     } catch (err: any) {
@@ -143,12 +143,9 @@ export const getBureauUsers = async (ctx: Context) => {
             where: {
                 distributorId: distributorId
             },
-            order:[['id', 'DESC']],
+            order: [['id', 'DESC']],
             raw: true
         });
-
-        console.log("users:", users);
-
         if (users.length === 0) {
             ctx.body = { status: 2, message: "No users found", data: [] };
         } else {

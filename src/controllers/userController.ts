@@ -1,4 +1,6 @@
 import { Context } from 'koa';
+import * as path from 'path';
+import * as fs from 'fs';
 import User from '../models/User';
 import UsersAge from '../models/UsersAge';
 import UsersCaste from '../models/UsersCaste';
@@ -261,50 +263,54 @@ export const createUser = async (ctx: Context) => {
 };
 
 export const createImages = async (ctx: Context) => {
-    const { matriId, order } = ctx.request.body as any;
+    const { matriId, order } = ctx.request.body as any; // Extract matriId and order from request body
 
-    // console.log(ctx.request.body);
-    // console.log(ctx.request.files)
-    // console.log("chkkkkkkk")
+    // Ensure the request is a POST method and contains a file
+    if (ctx.request.method === 'POST' && ctx.request.files && ctx.request.files.file) {
+        const file: any = ctx.request.files.file;  // Get the uploaded file from formData
 
-    // return false
+        // Define the destination directory: uploads/users/{matriId}/
+        const userUploadsDir = path.join(__dirname, '../uploads/users', matriId);
 
-    if (ctx.request.method === 'POST' && ctx.request.files) {
-        const files: any = ctx.request.files;  // Uploaded file(s)
-        // Log the uploaded file(s) for debugging
-        // console.log('Uploaded files:', files);
+        // Create the uploads/users/{matriId} directory if it doesn't exist
+        if (!fs.existsSync(userUploadsDir)) {
+            fs.mkdirSync(userUploadsDir, { recursive: true });
+        }
 
-        // ctx.body = {
-        //     status: 'success',
-        //     message: 'File uploaded successfully!',
-        //     files
-        // };
-
-        // Insert images into user_image table
         try {
-            for (let i = 0; i < files.images.length; i++) {
-                await UserImages.create({
-                    image: 'uploads/' + files.images[i].newFilename,
-                    matriId: matriId,
-                    position: order,
-                    deleteStatus: 1
-                });
-            };
+            // Ensure the file has a temporary path
+            const tempFilePath = file.filepath; // Temporary path in temp_upload
 
+            if (!tempFilePath) {
+                throw new Error(`Temporary path not found for the uploaded file.`);
+            }
 
+            // Generate the new file path: uploads/users/{matriId}/{filename}
+            const newFilePath = path.join(userUploadsDir, file.newFilename);
 
+            // Move the file from temp_upload to the desired folder
+            fs.renameSync(tempFilePath, newFilePath);
+
+            // Insert the image data into the `user_image` table
+            await UserImages.create({
+                image: `/${matriId}/${file.newFilename}`, // Path to saved image
+                matriId: matriId,
+                position: order,
+                deleteStatus: 1
+            });
+
+            // Respond with success
             ctx.status = 200;
-            ctx.body = { status: 1, message: 'Images inserted successfully' };
+            ctx.body = { status: 1, message: 'Image inserted and moved successfully' };
         } catch (err: any) {
+            // Handle any errors that occur during the process
             ctx.status = 400;
-            console.error("Error inserting user images:", err);
-            ctx.body = { status: 3, message: 'Error inserting user images', error: err.message };
-            return;
+            console.error("Error inserting and moving user image:", err);
+            ctx.body = { status: 3, message: 'Error inserting user image', error: err.message };
         }
     } else {
-        ctx.body = 'Please upload a file.';
+        ctx.body = { status: 3, message: 'Please upload a file.' };
     }
-
 };
 
 

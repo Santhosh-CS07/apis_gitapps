@@ -10,41 +10,38 @@ import fs from 'fs';
 
 const app = new Koa();
 
-// app.use(koaBody({
-//     multipart: true,  // Important if you're uploading files
-//     formidable: {
-//         maxFileSize: 20 * 1024 * 1024  // Set max file size (20MB in this example)
-//     },
-//     jsonLimit: '100mb',  // Increase the JSON body limit to handle large JSON payloads
-//     formLimit: '100mb',  // Increase the form body limit
-//     textLimit: '100mb',  // Increase the text body limit if you're sending plain text payloads
-// }));
+// Create base directories if they don't exist
+const baseUploadsDir = path.join(__dirname, '/uploads');
+const userUploadsDir = path.join(baseUploadsDir, '/users');
+const otherImagesDir = path.join(baseUploadsDir, '/otherimages');
+
+// Ensure the folders exist before use
+[baseUploadsDir, userUploadsDir, otherImagesDir].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+});
 
 app.use(koaBody({
     multipart: true,  // Important for handling file uploads
     formidable: {
-        uploadDir: path.join(__dirname, '/uploads'), // Directory where files will be uploaded
+        uploadDir: path.join(__dirname, 'temp_upload'), // Directory for temporary uploads
         keepExtensions: true,  // Keep file extensions
         maxFileSize: 20 * 1024 * 1024,  // Maximum file size (20 MB)
-        onFileBegin: (name: any, file: any) => {
-            // Ensure file.name exists before setting path
-            if (file && file.name) {
-                const filePath = path.join(__dirname, '/uploads', file.name);
-                file.path = filePath;  // Setting file path
-            } else {
-                console.error("File name is undefined");
-            }
-        }
-    }
+        onFileBegin: (name: string, file: any) => {
+            // Here you can log or manage file info if needed
+            // console.log(`Uploading file: ${file.name}`);
+        },
+    },
+    jsonLimit: '100mb',  // Increase the JSON body limit to handle large JSON payloads
+    formLimit: '100mb',  // Increase the form body limit
+    textLimit: '100mb',  // Increase the text body limit if you're sending plain text payloads
+
 }));
 
 
-// Create uploads folder if not exists
-const uploadDir = path.join(__dirname, '/uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
-}
-app.use(serve(path.join(__dirname, 'uploads')));
+// Serve the uploads folder
+app.use(serve(baseUploadsDir));
 
 app.use(cors({
     origin: '*',
@@ -52,9 +49,6 @@ app.use(cors({
     allowHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true, // Enable credentials if you're dealing with cookies or authentication headers
 }));
-
-// app.use(serve(path.join(__dirname, 'uploads')));
-
 
 app.use(router.routes()).use(router.allowedMethods());
 
