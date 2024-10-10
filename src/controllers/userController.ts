@@ -514,7 +514,9 @@ export const getSearchData = async (ctx: Context) => {
                 {
                     model: UserImages,
                     as: 'images',
-                    attributes: ['image', 'position'],
+                    attributes: ['image'],
+                    limit: 1,
+                    required:false
                 },
             ],
         });
@@ -534,6 +536,7 @@ export const getFeMaleProfiles = async (ctx: Context) => {
     const offset = (page - 1) * limit;
 
     try {
+        // Optimized query for fetching profiles with essential fields only
         const users = await User.findAll({
             where: { gender: "Female", deleteStatus: 1 },
             attributes: ['name', 'matriId', 'age', 'height', 'createdBy', 'shortList'],
@@ -544,33 +547,39 @@ export const getFeMaleProfiles = async (ctx: Context) => {
                 {
                     model: UserProfessionalDetails,
                     as: 'professionalDetails',
-                    attributes: ['education', 'occupation', 'annualIncome']
+                    attributes: ['education', 'occupation', 'annualIncome'],
+                    required: false // Only fetch if present, reduces unnecessary joins
                 },
                 {
                     model: LocationDetails,
                     as: 'locationDetails',
-                    attributes: ['country', 'state', 'city']
+                    attributes: ['country', 'state', 'city'],
+                    required: false // Only fetch if present
                 },
                 {
                     model: ReligionDetails,
                     as: 'religionDeails',
-                    attributes: ['caste']
+                    attributes: ['caste'],
+                    required: false // Fetch religion details if available
                 },
                 {
                     model: UserImages,
                     as: 'images',
-                    attributes: ['image', 'position'],
-                    limit: 1, // Limit to 1 image per user
+                    attributes: ['image'],
+                    limit: 1, // Only get one image
+                    required: false // Only fetch if there is an image
                 }
             ]
         });
 
+        // Send response
         ctx.body = { status: 1, message: 'Success', data: users };
     } catch (error: any) {
         ctx.status = 400;
         ctx.body = error.message;
     }
 };
+
 
 
 // export const getFeMaleProfiles = async (ctx: Context) => {
@@ -747,53 +756,66 @@ export const getUserDataById = async (ctx: Context) => {
 
 export const getProfileData = async (ctx: Context) => {
     const { matriId } = ctx.query as any;
+
     try {
+        // Reduce data fetched by limiting attributes
         const data = await User.findOne({
-            where: { matriId: matriId, deleteStatus: 1 },
-            include: [{
-                model: UserProfessionalDetails,
-                as: 'professionalDetails'
-            },
-            {
-                model: LocationDetails,
-                as: 'locationDetails'
-            },
-            {
-                model: ReligionDetails,
-                as: 'religionDeails'
-            },
-            {
-                model: UserImages,
-                as: 'images',
-                attributes: ['image', 'position', 'id'],
-                where: { deleteStatus: 1 }
-            },
-            {
-                model: FamilyDetails,
-                as: 'familyDetails',
-                required: false
-            },
-            {
-                model: FamilyPropertyDetails,
-                as: 'familyPropertyDetails'
-            },
-            {
-                model: PartnerPreference,
-                as: 'partnerDetails'
-            },
-            {
-                model: BureauUser,
-                as: 'bureau',
-                where: { deleteStatus: 1 },
-                attributes: ['mobileNumber']
-            }
-            ]
+            where: { matriId, deleteStatus: 1 },
+            attributes: ['name', 'age', 'height', 'createdBy'], // Specify required fields
+            include: [
+                {
+                    model: UserProfessionalDetails,
+                    as: 'professionalDetails',
+                    required: false
+                },
+                {
+                    model: LocationDetails,
+                    as: 'locationDetails',
+                    required: false
+                },
+                {
+                    model: ReligionDetails,
+                    as: 'religionDeails',
+                    required: false
+                },
+                {
+                    model: UserImages,
+                    as: 'images',
+                    attributes: ['image', 'position'],
+                    where: { deleteStatus: 1 }, // Only include non-deleted images
+                    required: false
+                },
+                {
+                    model: FamilyDetails,
+                    as: 'familyDetails',
+                    required: false,
+                },
+                {
+                    model: FamilyPropertyDetails,
+                    as: 'familyPropertyDetails',
+                    required: false
+                },
+                {
+                    model: PartnerPreference,
+                    as: 'partnerDetails',
+                    required: false
+                },
+                {
+                    model: BureauUser,
+                    as: 'bureau',
+                    attributes: ['mobileNumber'], // Only mobileNumber
+                    where: { deleteStatus: 1 },
+                    required: false
+                },
+            ],
         }).catch((error: any) => {
-            ctx.body = { status: 3, message: 'error finding data', data: [] };
+            // Handle errors in the findOne query
+            ctx.body = { status: 3, message: 'Error finding data', data: [] };
             return;
         });
+
         if (data) {
-            ctx.body = { status: 1, message: 'Success', data: data };
+            ctx.body = { status: 1, message: 'Success', data };
         } else {
             ctx.body = { status: 3, message: 'Profile Not Available', data: [] };
         }
@@ -802,6 +824,7 @@ export const getProfileData = async (ctx: Context) => {
         ctx.body = error.message;
     }
 };
+
 
 
 
