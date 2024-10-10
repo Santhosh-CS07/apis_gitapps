@@ -530,7 +530,7 @@ export const getSearchData = async (ctx: Context) => {
 
 
 export const getFeMaleProfiles = async (ctx: Context) => {
-    const { page = 1, limit = 50 } = ctx.query as any; // Pagination parameters from query
+    const { page = 1, limit } = ctx.query as any; // Pagination parameters from query
     const offset = (page - 1) * limit;
 
     try {
