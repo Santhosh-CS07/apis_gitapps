@@ -1,6 +1,8 @@
 import { Context } from 'koa';
 import * as path from 'path';
 import * as fs from 'fs';
+import { v4 as uuidv4 } from 'uuid'; // For generating unique filenames
+import { Buffer } from 'buffer'; // For converting base64 to binary
 import User from '../models/User';
 import UsersAge from '../models/UsersAge';
 import UsersCaste from '../models/UsersCaste';
@@ -262,15 +264,64 @@ export const createUser = async (ctx: Context) => {
     }
 };
 
+// export const createImages = async (ctx: Context) => {
+//     const { matriId, order } = ctx.request.body as any; // Extract matriId and order from request body
+
+//     // Ensure the request is a POST method and contains a file
+//     if (ctx.request.method === 'POST' && ctx.request.files && ctx.request.files.file) {
+//         const file: any = ctx.request.files.file;  // Get the uploaded file from formData
+
+//         // Define the destination directory: uploads/users/{matriId}/
+//         const userUploadsDir = path.join(__dirname, '../uploads/users', matriId);
+
+//         // Create the uploads/users/{matriId} directory if it doesn't exist
+//         if (!fs.existsSync(userUploadsDir)) {
+//             fs.mkdirSync(userUploadsDir, { recursive: true });
+//         }
+
+//         try {
+//             // Ensure the file has a temporary path
+//             const tempFilePath = file.filepath; // Temporary path in temp_upload
+
+//             if (!tempFilePath) {
+//                 throw new Error(`Temporary path not found for the uploaded file.`);
+//             }
+
+//             // Generate the new file path: uploads/users/{matriId}/{filename}
+//             const newFilePath = path.join(userUploadsDir, file.newFilename);
+
+//             // Move the file from temp_upload to the desired folder
+//             fs.renameSync(tempFilePath, newFilePath);
+
+//             // Insert the image data into the `user_image` table
+//             await UserImages.create({
+//                 image: `/${matriId}/${file.newFilename}`, // Path to saved image
+//                 matriId: matriId,
+//                 position: order,
+//                 deleteStatus: 1
+//             });
+
+//             // Respond with success
+//             ctx.status = 200;
+//             ctx.body = { status: 1, message: 'Image inserted and moved successfully' };
+//         } catch (err: any) {
+//             // Handle any errors that occur during the process
+//             ctx.status = 400;
+//             console.error("Error inserting and moving user image:", err);
+//             ctx.body = { status: 3, message: 'Error inserting user image', error: err.message };
+//         }
+//     } else {
+//         ctx.body = { status: 3, message: 'Please upload a file.' };
+//     }
+// };
+
 export const createImages = async (ctx: Context) => {
-    const { matriId, order } = ctx.request.body as any; // Extract matriId and order from request body
+    const { matriId, images } = ctx.request.body as any;
 
-    // Ensure the request is a POST method and contains a file
-    if (ctx.request.method === 'POST' && ctx.request.files && ctx.request.files.file) {
-        const file: any = ctx.request.files.file;  // Get the uploaded file from formData
-
+    // Ensure the request contains an array of base64 images
+    if (ctx.request.method === 'POST' && images && Array.isArray(images)) {
         // Define the destination directory: uploads/users/{matriId}/
-        const userUploadsDir = path.join(__dirname, '../uploads/users', matriId);
+        const userUploadsDir = path.join(__dirname, '../uploads/users', String(matriId)); // Convert matriId to string
 
         // Create the uploads/users/{matriId} directory if it doesn't exist
         if (!fs.existsSync(userUploadsDir)) {
@@ -278,38 +329,127 @@ export const createImages = async (ctx: Context) => {
         }
 
         try {
-            // Ensure the file has a temporary path
-            const tempFilePath = file.filepath; // Temporary path in temp_upload
+            // Loop through each base64 image in the array
+            for (let i = 0; i < images.length; i++) {
+                const base64Image = images[i];
+                const order = i + 1; // Use the index as the order (or modify as needed)
 
-            if (!tempFilePath) {
-                throw new Error(`Temporary path not found for the uploaded file.`);
+                // If the image is null, create a record with null value
+                if (base64Image === null) {
+                    await UserImages.create({
+                        image: "", // Placeholder for the null image
+                        matriId: matriId,
+                        position: order,
+                        deleteStatus: 1
+                    });
+                    continue; // Skip to the next iteration
+                }
+
+                if (typeof base64Image !== 'string') {
+                    throw new Error(`Invalid base64 image at index ${i}`);
+                }
+
+                // Extract the base64 data
+                const match = base64Image.match(/^data:image\/(png|jpeg|jpg);base64,(.+)$/);
+                if (!match) {
+                    throw new Error(`Invalid image format at index ${i}`);
+                }
+
+                const extension = match[1]; // Get the file extension
+                const base64Data = match[2]; // Get the base64 string
+
+                // Generate a unique filename for each image
+                const filename = `${uuidv4()}.${extension}`;
+
+                // Generate the full path where the image will be saved
+                const filePath = path.join(userUploadsDir, filename);
+
+                // Convert base64 data to binary and write the file
+                const imageBuffer = Buffer.from(base64Data, 'base64');
+                fs.writeFileSync(filePath, imageBuffer);
+
+                // Insert the image data into the `user_image` table
+                await UserImages.create({
+                    image: `users/${matriId}/${filename}`, // Path to saved image
+                    matriId: matriId,
+                    position: order,
+                    deleteStatus: 1
+                });
             }
 
-            // Generate the new file path: uploads/users/{matriId}/{filename}
-            const newFilePath = path.join(userUploadsDir, file.newFilename);
-
-            // Move the file from temp_upload to the desired folder
-            fs.renameSync(tempFilePath, newFilePath);
-
-            // Insert the image data into the `user_image` table
-            await UserImages.create({
-                image: `/${matriId}/${file.newFilename}`, // Path to saved image
-                matriId: matriId,
-                position: order,
-                deleteStatus: 1
-            });
-
-            // Respond with success
             ctx.status = 200;
-            ctx.body = { status: 1, message: 'Image inserted and moved successfully' };
+            ctx.body = { status: 1, message: 'Images inserted and stored successfully' };
         } catch (err: any) {
-            // Handle any errors that occur during the process
             ctx.status = 400;
-            console.error("Error inserting and moving user image:", err);
-            ctx.body = { status: 3, message: 'Error inserting user image', error: err.message };
+            console.error("Error inserting and storing user images:", err);
+            ctx.body = { status: 3, message: 'Error inserting user images', error: err.message };
         }
     } else {
-        ctx.body = { status: 3, message: 'Please upload a file.' };
+        ctx.body = { status: 3, message: 'Please provide an array of base64 images.' };
+    }
+};
+
+
+export const updateImages = async (ctx: Context) => {
+    const { matriId, images } = ctx.request.body as any;
+
+    // Ensure the request contains an array of base64 images
+    if (ctx.request.method === 'PUT' && images && Array.isArray(images)) {
+        // Define the destination directory: uploads/users/{matriId}/
+        const userUploadsDir = path.join(__dirname, '../uploads/users', String(matriId)); // Convert matriId to string
+
+        // Create the uploads/users/{matriId} directory if it doesn't exist
+        if (!fs.existsSync(userUploadsDir)) {
+            fs.mkdirSync(userUploadsDir, { recursive: true });
+        }
+
+        try {
+            // Loop through each base64 image in the array
+            for (let i = 0; i < images.length; i++) {
+                const base64Image = images[i]?.image;
+                const id:any = images[i].id;
+                const order = images[i]?.position; // Use the index as the order (or modify as needed)
+
+                if (!base64Image || typeof base64Image !== 'string') {
+                    throw new Error(`Invalid base64 image at index ${i}`);
+                }
+
+                // Extract the base64 data
+                const match = base64Image.match(/^data:image\/(png|jpeg|jpg);base64,(.+)$/);
+                if (!match) {
+                    throw new Error(`Invalid image format at index ${i}`);
+                }
+
+                const extension = match[1]; // Get the file extension
+                const base64Data = match[2]; // Get the base64 string
+
+                // Generate a unique filename for each image
+                const filename = `${uuidv4()}.${extension}`;
+
+                // Generate the full path where the image will be saved
+                const filePath = path.join(userUploadsDir, filename);
+
+                // Convert base64 data to binary and write the file
+                const imageBuffer = Buffer.from(base64Data, 'base64');
+                fs.writeFileSync(filePath, imageBuffer);
+
+                // Insert the image data into the `user_image` table
+                await UserImages.update({
+                    image: `users/${matriId}/${filename}`, // Path to saved image
+                    position: order,
+                    deleteStatus: 1
+                },{where: {id: id}});
+            }
+
+            ctx.status = 200;
+            ctx.body = { status: 1, message: 'Images inserted and stored successfully' };
+        } catch (err: any) {
+            ctx.status = 400;
+            console.error("Error inserting and storing user images:", err);
+            ctx.body = { status: 3, message: 'Error inserting user images', error: err.message };
+        }
+    } else {
+        ctx.body = { status: 3, message: 'Please provide an array of base64 images.' };
     }
 };
 
@@ -523,7 +663,8 @@ export const getMyProfiles = async (ctx: Context) => {
             {
                 model: UserImages,
                 as: 'images',
-                attributes: ['image', 'position']
+                attributes: ['image', 'position'],
+                limit: 1
             }
             ]
         });
@@ -624,7 +765,7 @@ export const getProfileData = async (ctx: Context) => {
             {
                 model: UserImages,
                 as: 'images',
-                attributes: ['image'],
+                attributes: ['image', 'position', 'id'],
                 where: { deleteStatus: 1 }
             },
             {

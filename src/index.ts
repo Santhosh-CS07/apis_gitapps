@@ -11,7 +11,7 @@ import fs from 'fs';
 const app = new Koa();
 
 // Create base directories if they don't exist
-const baseUploadsDir = path.join(__dirname, '/uploads');
+const baseUploadsDir = path.join(__dirname, 'uploads');
 const userUploadsDir = path.join(baseUploadsDir, '/users');
 const otherImagesDir = path.join(baseUploadsDir, '/otherimages');
 
