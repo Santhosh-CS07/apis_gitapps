@@ -532,53 +532,72 @@ export const getSearchData = async (ctx: Context) => {
 
 
 export const getFeMaleProfiles = async (ctx: Context) => {
-    const { page = 1, limit } = ctx.query as any; // Pagination parameters from query
-    const offset = (page - 1) * limit;
-
+    const LIMIT_MAX = 100; // Prevent fetching more than 100 results at once
+    
+    // Safely parse query parameters to numbers and set defaults if undefined
+    const page = Math.max(1, parseInt(Array.isArray(ctx.query.page) ? ctx.query.page[0] : ctx.query.page || '1')); // Ensure page is at least 1
+    const limit = Math.min(
+      LIMIT_MAX,
+      Math.max(1, parseInt(Array.isArray(ctx.query.limit) ? ctx.query.limit[0] : ctx.query.limit || '10')) // Ensure limit is within 1-100 range
+    );
+  
+    const offset = (page - 1) * limit; // Calculate offset based on page and limit
+  
     try {
-        // Optimized query for fetching profiles with essential fields only
-        const users = await User.findAll({
-            where: { gender: "Female", deleteStatus: 1 },
-            attributes: ['name', 'matriId', 'age', 'height', 'createdBy', 'shortList'],
-            order: [['id', 'DESC']],
-            limit: parseInt(limit),    // Limiting the number of profiles
-            offset: offset,            // Offset for pagination
-            include: [
-                {
-                    model: UserProfessionalDetails,
-                    as: 'professionalDetails',
-                    attributes: ['education', 'occupation', 'annualIncome'],
-                    required: false // Only fetch if present, reduces unnecessary joins
-                },
-                {
-                    model: LocationDetails,
-                    as: 'locationDetails',
-                    attributes: ['country', 'state', 'city'],
-                    required: false // Only fetch if present
-                },
-                {
-                    model: ReligionDetails,
-                    as: 'religionDeails',
-                    attributes: ['caste'],
-                    required: false // Fetch religion details if available
-                },
-                {
-                    model: UserImages,
-                    as: 'images',
-                    attributes: ['image'],
-                    limit: 1, // Only get one image
-                    required: false // Only fetch if there is an image
-                }
-            ]
-        });
-
-        // Send response
-        ctx.body = { status: 1, message: 'Success', data: users };
+      const users = await User.findAll({
+        where: { gender: "Female", deleteStatus: 1 },
+        attributes: ['name', 'matriId', 'age', 'height', 'createdBy', 'shortList'],
+        order: [['id', 'DESC']],
+        limit,    // Limit the number of profiles
+        offset,   // Offset for pagination
+        include: [
+          {
+            model: UserProfessionalDetails,
+            as: 'professionalDetails',
+            attributes: ['education', 'occupation', 'annualIncome'],
+            required: false
+          },
+          {
+            model: LocationDetails,
+            as: 'locationDetails',
+            attributes: ['country', 'state', 'city'],
+            required: false
+          },
+          {
+            model: ReligionDetails,
+            as: 'religionDeails',
+            attributes: ['caste'],
+            required: false
+          },
+          {
+            model: UserImages,
+            as: 'images',
+            attributes: ['image'],
+            limit: 1, // Only fetch the first image
+            required: false
+          }
+        ]
+      });
+  
+      const totalUsers = await User.count({ where: { gender: "Female", deleteStatus: 1 } });
+  
+      ctx.body = {
+        status: 1,
+        message: 'Success',
+        data: users,
+        pagination: {
+          currentPage: page,
+          totalPages: Math.ceil(totalUsers / limit),
+          totalCount: totalUsers
+        }
+      };
     } catch (error: any) {
-        ctx.status = 400;
-        ctx.body = error.message;
+      ctx.status = 400;
+      ctx.body = { status: 0, message: 'Error fetching profiles', error: error.message };
     }
-};
+  };
+  
+  
 
 
 
@@ -761,7 +780,6 @@ export const getProfileData = async (ctx: Context) => {
         // Reduce data fetched by limiting attributes
         const data = await User.findOne({
             where: { matriId, deleteStatus: 1 },
-            attributes: ['name', 'age', 'height', 'createdBy'], // Specify required fields
             include: [
                 {
                     model: UserProfessionalDetails,
@@ -781,7 +799,6 @@ export const getProfileData = async (ctx: Context) => {
                 {
                     model: UserImages,
                     as: 'images',
-                    attributes: ['image', 'position'],
                     where: { deleteStatus: 1 }, // Only include non-deleted images
                     required: false
                 },
