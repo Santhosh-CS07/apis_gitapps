@@ -11,6 +11,7 @@ import FamilyPropertyDetails from './FamilyPropertyDetails';
 import PartnerPrefrence from './PartnerPrefrence';
 import BureauUser from './BureauUser';
 import PartnerPreference from './PartnerPrefrence';
+import BureauDocuments from './BureauDocuments';
 
 // Define associations
 export const setupAssociations = () => {
@@ -31,5 +32,7 @@ export const setupAssociations = () => {
         User.hasOne(PartnerPreference, {  foreignKey: 'matriId',
         sourceKey: 'matriId', as: 'partnerDetails' });
         User.hasOne(BureauUser, {  foreignKey: 'bureauId',
-                sourceKey: 'bureauId', as: 'bureau' });
+        sourceKey: 'bureauId', as: 'bureau' });
+        BureauUser.hasMany(BureauDocuments, {  foreignKey: 'bureauId',
+        sourceKey: 'bureauId', as: 'bureauImages' });
 };

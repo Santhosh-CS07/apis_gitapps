@@ -3,6 +3,9 @@ import BureauUser from '../models/BureauUser';
 import { Op } from 'sequelize';
 import path from 'path';
 import BureauDocuments from '../models/BureauDocuments';
+import * as fs from 'fs';
+import { v4 as uuidv4 } from 'uuid'; // For generating unique filenames
+import { Buffer } from 'buffer'; // For converting base64 to binary
 
 
 
@@ -67,7 +70,7 @@ export const createBureauUsers = async (ctx: Context) => {
     }
 };
 
-export const createImages = async (ctx: Context) => {
+export const createImages_ = async (ctx: Context) => {
     const { images, bureauId, order } = ctx.request.body as any;
 
     // Basic validation for required fields
@@ -93,6 +96,60 @@ export const createImages = async (ctx: Context) => {
         console.error("Error inserting Distributor images:", err);
         ctx.body = { status: 3, message: 'Error inserting Distributor images', error: err.message };
         return;
+    }
+};
+export const createImages = async (ctx: Context) => {
+    const { bureauId,order, images } = ctx.request.body as any;
+
+    // Ensure the request contains an array of base64 images
+    if (ctx.request.method === 'POST') {
+        // Define the destination directory: uploads/users/{matriId}/
+        const userUploadsDir = path.join(__dirname, '../uploads/bureauUsers', String(bureauId)); // Convert matriId to string
+
+        // Create the uploads/users/{matriId} directory if it doesn't exist
+        if (!fs.existsSync(userUploadsDir)) {
+            fs.mkdirSync(userUploadsDir, { recursive: true });
+        }
+
+        try {
+                const base64Image = images;
+
+                // Extract the base64 data
+                const match = base64Image.match(/^data:image\/(png|jpeg|jpg);base64,(.+)$/);
+                if (!match) {
+                    throw new Error(`Invalid image format at index`);
+                }
+
+                const extension = match[1]; // Get the file extension
+                const base64Data = match[2]; // Get the base64 string
+
+                // Generate a unique filename for each image
+                const filename = `${uuidv4()}.${extension}`;
+
+                // Generate the full path where the image will be saved
+                const filePath = path.join(userUploadsDir, filename);
+
+                // Convert base64 data to binary and write the file
+                const imageBuffer = Buffer.from(base64Data, 'base64');
+                fs.writeFileSync(filePath, imageBuffer);
+
+                // Insert the image data into the `user_image` table
+                await BureauDocuments.create({
+                    filePath: `bureauUsers/${bureauId}/${filename}`, // Path to saved image
+                    bureauId: bureauId,
+                    banner: order,
+                    deleteStatus: 1
+                });
+
+            ctx.status = 200;
+            ctx.body = { status: 1, message: 'Images inserted and stored successfully' };
+        } catch (err: any) {
+            ctx.status = 400;
+            console.error("Error inserting and storing user images:", err);
+            ctx.body = { status: 3, message: 'Error inserting bureau images', error: err.message };
+        }
+    } else {
+        ctx.body = { status: 3, message: 'Please provide an array of base64 images.' };
     }
 };
 
@@ -184,6 +241,40 @@ export const bureauLogin = async (ctx: Context) => {
         console.error('Error during bureau login:', error);
         ctx.status = 500;
         ctx.body = { status: 3, message: "Internal server error.", data: [] };
+    }
+};
+
+export const getBureauData = async (ctx: Context) => {
+    const { bureauId } = ctx.query as any;
+
+    if (!bureauId) {
+        ctx.status = 400;
+        ctx.body = { status: 3, message: "bureauId is required", data: [] };
+        return;
+    }
+    try {
+        // Ensure distributorId is correctly formatted if necessary
+        const users = await BureauUser.findOne({
+            where: {
+                bureauId: bureauId,
+                deleteStatus:1
+            },
+            include:[{
+                model: BureauDocuments,
+                as:"bureauImages",
+                where:{deleteStatus:1},
+                required:false
+            }],
+        });
+        if (!users) {
+            ctx.body = { status: 2, message: "No users found", data: [] };
+        } else {
+            ctx.body = { status: 1, message: "Successfully Fetched", data: users };
+        }
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        ctx.status = 500;
+        ctx.body = { status: 3, message: "Failed to fetch bureau users", data: [] };
     }
 };
 
