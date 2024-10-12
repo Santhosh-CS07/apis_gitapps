@@ -820,7 +820,7 @@ export const getProfileData = async (ctx: Context) => {
                 {
                     model: BureauUser,
                     as: 'bureau',
-                    attributes: ['mobileNumber'], // Only mobileNumber
+                    attributes: ['mobileNumber', 'bureauName'], // Only mobileNumber
                     where: { deleteStatus: 1 },
                     required: false
                 },

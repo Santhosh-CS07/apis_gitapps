@@ -6,6 +6,7 @@ import BureauDocuments from '../models/BureauDocuments';
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid'; // For generating unique filenames
 import { Buffer } from 'buffer'; // For converting base64 to binary
+import User from '../models/User';
 
 
 
@@ -266,10 +267,19 @@ export const getBureauData = async (ctx: Context) => {
                 required:false
             }],
         });
+
+        const allProfilesCount:any = await User.count().catch((error:any)=>{
+            ctx.body = { status: 3, message: "Failed finding total count", data: [] };
+            return; 
+        });
+        const myProfilesCount:any = await User.count({where:{bureauId:bureauId}}).catch((error:any)=>{
+            ctx.body = { status: 3, message: "Failed finding count", data: [] };
+            return; 
+        });
         if (!users) {
             ctx.body = { status: 2, message: "No users found", data: [] };
         } else {
-            ctx.body = { status: 1, message: "Successfully Fetched", data: users };
+            ctx.body = { status: 1, message: "Successfully Fetched", data: users, allProfilesCount: allProfilesCount, myProfilesCount: myProfilesCount };
         }
     } catch (error) {
         console.error("Error fetching users:", error);
